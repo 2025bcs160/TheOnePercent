@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  trading-backend:
+    build: ./backend
+    container_name: trading-dashboard-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ENVIRONMENT=production
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Uncomment to also run the React frontend
+  # trading-frontend:
+  #   build: ./
+  #   container_name: trading-dashboard-frontend
+  #   ports:
+  #     - "5173:5173"
+  #   environment:
+  #     - VITE_API_URL=http://localhost:8000
+  #   depends_on:
+  #     - trading-backend
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   restart: unless-stopped
+
+networks:
+  default:
+    name: trading-dashboard-network

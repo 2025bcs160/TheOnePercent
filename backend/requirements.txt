@@ -1,0 +1,12 @@
+python-dotenv==1.0.0
+MetaTrader5==5.0.5735
+requests==2.31.0
+flask==3.0.0
+flask-cors==4.0.0
+
+# Optional FastAPI support (commented out to avoid build issues on Windows without Rust/MSVC)
+# fastapi==0.104.1
+# uvicorn[standard]==0.24.0
+# pydantic==2.5.0
+# python-multipart==0.0.6
+# gunicorn==21.2.0
