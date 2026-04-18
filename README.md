@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 TheOnePercent Trading Dashboard
 
 A premium React-based trading analytics platform with MetaTrader 5 integration, built for serious traders who demand the best.
@@ -356,3 +357,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Built with ❤️ for serious traders by TheOnePercent**
+=======
+# TheOnePercent
+trading_dasboard
+>>>>>>> e3b4df163a47216aa0091096d241549f5077fd7a
