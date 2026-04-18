@@ -1,0 +1,2 @@
+# TheOnePercent
+trading_dasboard
