@@ -1,5 +1,5 @@
 """
-Minimal Flask app for Railway deployment
+Minimal Flask app for Railway deployment - no external deps
 """
 import os
 from flask import Flask, jsonify
@@ -18,5 +18,5 @@ def health():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
-    print(f"Starting app on port {port}")
+    print(f"Starting minimal app on port {port}")
     application.run(host="0.0.0.0", port=port)
