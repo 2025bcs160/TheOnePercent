@@ -4,6 +4,7 @@ Provides API endpoints for MetaTrader 5 integration
 """
 
 import os
+import sys
 import logging
 from functools import wraps
 from flask import Flask, jsonify, request
@@ -14,10 +15,16 @@ from datetime import datetime
 # Load environment variables
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
+# Allow local backend modules to import correctly no matter the working directory
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 try:
     from mt5_client import mt5_client
 except Exception as import_error:
-    logger = logging.getLogger(__name__)
     logger.warning(
         "MT5 client import failed; running without MetaTrader 5 support: %s",
         import_error,
