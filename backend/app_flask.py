@@ -11,10 +11,40 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from datetime import datetime
 
-from mt5_client import mt5_client
-
 # Load environment variables
 load_dotenv()
+
+try:
+    from mt5_client import mt5_client
+except Exception as import_error:
+    logger = logging.getLogger(__name__)
+    logger.warning(
+        "MT5 client import failed; running without MetaTrader 5 support: %s",
+        import_error,
+    )
+
+    class _DummyMT5Client:
+        connected = False
+
+        def connect(self, *args, **kwargs):
+            return {"success": False, "error": "MetaTrader 5 client unavailable"}
+
+        def disconnect(self, *args, **kwargs):
+            return True
+
+        def get_account(self, *args, **kwargs):
+            return {"success": False, "error": "Not connected to MetaTrader 5"}
+
+        def get_positions(self, *args, **kwargs):
+            return {"success": False, "error": "Not connected to MetaTrader 5"}
+
+        def get_trades(self, *args, **kwargs):
+            return {"success": False, "error": "Not connected to MetaTrader 5"}
+
+        def get_trade_history_by_ticket(self, *args, **kwargs):
+            return {"success": False, "error": "Not connected to MetaTrader 5"}
+
+    mt5_client = _DummyMT5Client()
 
 # Setup logging
 logging.basicConfig(
@@ -302,12 +332,7 @@ def docs():
 @app.route("/", methods=["GET"])
 def index():
     """Root endpoint"""
-    return jsonify({
-        "name": "Trading Dashboard API",
-        "version": "1.0.0",
-        "status": "running",
-        "documentation": "/api/docs"
-    }), 200
+    return jsonify({"status": "ok"}), 200
 
 
 if __name__ == "__main__":
