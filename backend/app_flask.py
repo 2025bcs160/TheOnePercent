@@ -313,7 +313,8 @@ def index():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))
     host = os.getenv("HOST", "0.0.0.0")
-    debug = os.getenv("ENVIRONMENT", "development") == "development"
+    environment = os.getenv("ENVIRONMENT", "production")
+    debug = environment == "development" and os.getenv("FLASK_DEBUG", "0") == "1"
     
-    logger.info(f"Starting Flask server on {host}:{port}")
+    logger.info(f"Starting Flask server on {host}:{port} (environment={environment})")
     app.run(host=host, port=port, debug=debug)
