@@ -23,7 +23,33 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 try:
-    from mt5_client import mt5_client
+    from mt5_client import *
+except Exception as import_error:
+    print("MT5 disabled:", import_error)
+
+    class _DummyMT5Client:
+        connected = False
+
+        def connect(self, *args, **kwargs):
+            return {"success": False, "error": "MT5 not available"}
+
+        def disconnect(self, *args, **kwargs):
+            return True
+
+        def get_account(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_positions(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_trades(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_trade_history_by_ticket(self, *args, **kwargs):
+            return {"success": False}
+
+    mt5_client = _DummyMT5Client()
+    print("MT5 disabled:", e)
 except Exception as import_error:
     logger.warning(
         "MT5 client import failed; running without MetaTrader 5 support: %s",
