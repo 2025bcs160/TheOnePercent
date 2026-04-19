@@ -1,4 +1,4 @@
-from backend.app_flask import app
+from backend.app_flask import app as application
 
 if __name__ == "__main__":
-    app.run()
+    application.run()
