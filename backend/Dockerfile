@@ -2,9 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install minimal system dependencies (if needed for MetaTrader5)
 RUN apt-get update && apt-get install -y \
-    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
