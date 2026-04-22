@@ -7,7 +7,10 @@ import logging
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from datetime import datetime
-import MetaTrader5 as mt5
+try:
+    import MetaTrader5 as mt5
+except ImportError:
+    mt5 = None
 
 logger = logging.getLogger(__name__)
 
