@@ -31,6 +31,37 @@ except Exception as import_error:
         connected = False
 
         def connect(self, *args, **kwargs):
+            return {"success": False, "error": "MetaTrader 5 client unavailable"}
+
+        def disconnect(self, *args, **kwargs):
+            return True
+
+        def get_account(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_positions(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_trades(self, *args, **kwargs):
+            return {"success": False}
+
+        def get_trade_history_by_ticket(self, *args, **kwargs):
+            return {"success": False}
+
+    mt5_client = _DummyMT5Client()
+
+    class _DummyMT5Client:
+        connected = False
+
+        def connect(self, *args, **kwargs):
+            return {"success": False, "error": "MetaTrader 5 client unavailable"}
+
+    mt5_client = _DummyMT5Client()
+
+    class _DummyMT5Client:
+        connected = False
+
+        def connect(self, *args, **kwargs):
             return {"success": False, "error": "MT5 not available"}
 
         def disconnect(self, *args, **kwargs):
