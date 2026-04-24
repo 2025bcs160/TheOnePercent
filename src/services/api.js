@@ -1,5 +1,5 @@
 const delay = (ms = 80) => new Promise((resolve) => setTimeout(resolve, ms));
-const rawApiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const rawApiBaseUrl = import.meta.env.VITE_API_URL || "https://web-production-31811.up.railway.app";
 const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, "") + "/api";
 
 const apiFetch = async (endpoint, options = {}) => {
