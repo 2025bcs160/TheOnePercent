@@ -2,7 +2,7 @@ import Login from "./Login";
 import { useAuth } from "../AuthContext";
 
 export default function PrivateRoute({ children }) {
-  const { isAuthenticated, loading, login } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (
@@ -13,7 +13,7 @@ export default function PrivateRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Login onLogin={login} />;
+    return <Login />;
   }
 
   return children;

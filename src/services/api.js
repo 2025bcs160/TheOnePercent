@@ -3,10 +3,17 @@ const rawApiBaseUrl = import.meta.env.VITE_API_URL || "https://web-production-31
 const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, "") + "/api";
 
 const apiFetch = async (endpoint, options = {}) => {
+  const token = localStorage.getItem('propFirmAuth') ? JSON.parse(localStorage.getItem('propFirmAuth')).token : null;
+  const headers = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     ...options,
   });
 
@@ -316,4 +323,15 @@ export async function syncMT5Trades(accountMode) {
     success: true,
     message: `MT5 account synced successfully for ${accountMode} account.`,
   };
+}
+
+// Auth functions
+export async function getUser() {
+  try {
+    const data = await apiFetch("/auth/me", { method: "GET" });
+    return data.user;
+  } catch (error) {
+    console.error("Failed to get user:", error);
+    return null;
+  }
 }

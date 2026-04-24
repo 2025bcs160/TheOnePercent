@@ -60,6 +60,27 @@ logger = logging.getLogger(__name__)
 # Create Flask app
 app = Flask(__name__)
 
+# Configure JWT
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+from flask_jwt_extended import JWTManager
+jwt = JWTManager(app)
+
+# Configure database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize database
+from auth import db
+db.init_app(app)
+
+# Create tables
+with app.app_context():
+    db.create_all()
+
+# Register auth blueprint
+from auth import auth_bp
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+
 # Configure CORS
 cors_origins = os.getenv(
     "CORS_ORIGINS", 

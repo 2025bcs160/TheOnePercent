@@ -1,147 +1,212 @@
 ﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAccounts, saveAccounts } from "../services/api";
+import { useAuth } from "../AuthContext";
 
 function isValidEmail(value) {
   return /^\S+@\S+\.\S+$/.test(value);
 }
 
-export default function Login({ onLogin }) {
+export default function Login() {
   const [mode, setMode] = useState("login");
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const resetFields = () => {
-    setName("");
     setEmail("");
     setPassword("");
     setConfirmPassword("");
     setError("");
   };
 
-  const navigate = useNavigate();
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
+    setLoading(true);
+
     const trimmedEmail = email.trim().toLowerCase();
 
     if (!isValidEmail(trimmedEmail)) {
       setError("Enter a valid email address.");
+      setLoading(false);
       return;
     }
 
     if (!password) {
       setError("Enter your password.");
+      setLoading(false);
       return;
     }
 
-    const accounts = await fetchAccounts();
-    const existingAccount = accounts.find((account) => account.email === trimmedEmail);
+    try {
+      if (mode === "register") {
+        if (!confirmPassword) {
+          setError("Confirm your password.");
+          setLoading(false);
+          return;
+        }
 
-    if (mode === "register") {
-      if (!name.trim()) {
-        setError("Enter your full name.");
-        return;
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          setLoading(false);
+          return;
+        }
+
+        // Register
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password }),
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setError(data.error || "Registration failed");
+          setLoading(false);
+          return;
+        }
+
+        // After register, login
+        const loginResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password }),
+        });
+
+        const loginData = await loginResponse.json();
+        if (!loginData.success) {
+          setError(loginData.error || "Login after registration failed");
+          setLoading(false);
+          return;
+        }
+
+        login(loginData.token);
+        navigate("/");
+      } else {
+        // Login
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password }),
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          setError(data.error || "Login failed");
+          setLoading(false);
+          return;
+        }
+
+        login(data.token);
+        navigate("/");
       }
-
-      if (!confirmPassword) {
-        setError("Confirm your password.");
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        setError("Passwords do not match.");
-        return;
-      }
-
-      if (existingAccount) {
-        setError("An account with that email already exists.");
-        return;
-      }
-
-      const newAccount = {
-        name: name.trim(),
-        email: trimmedEmail,
-        password,
-      };
-
-      await saveAccounts([...accounts, newAccount]);
-      onLogin({ name: newAccount.name, email: newAccount.email });
-      resetFields();
-      navigate("/analytics");
-      return;
+    } catch (err) {
+      setError("Network error. Please try again.");
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!existingAccount || existingAccount.password !== password) {
-      setError("Email or password is incorrect.");
-      return;
-    }
-
-    onLogin({ name: existingAccount.name, email: existingAccount.email });
+  const handleModeChange = (newMode) => {
+    setMode(newMode);
     resetFields();
-    navigate("/analytics");
   };
 
   return (
-    <main className="login-page">
-      <div className="login-card card">
-        <div className="login-brand">1%</div>
-        <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
-        <p className="login-copy">
-          {mode === "login"
-            ? "Sign in to TheOnePercent and unlock premium trading analytics."
-            : "Create your account to access elite performance insights and trade tracking."}
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {mode === "login" ? "Sign in to your account" : "Create your account"}
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${
+                  mode === "register" ? "" : "rounded-b-md"
+                } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            {mode === "register" && (
+              <div>
+                <label htmlFor="confirmPassword" className="sr-only">
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
 
-        {mode === "register" && (
-          <label>
-            Full name
-            <input value={name} onChange={(e) => setName(e.target.value)} type="text" />
-          </label>
-        )}
+          {error && (
+            <div className="text-red-600 text-sm text-center">{error}</div>
+          )}
 
-        <label>
-          Email
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
-        </label>
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              {loading ? "Processing..." : mode === "login" ? "Sign in" : "Register"}
+            </button>
+          </div>
 
-        <label>
-          Password
-          <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" />
-        </label>
-
-        {mode === "register" && (
-          <label>
-            Confirm password
-            <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type="password" />
-          </label>
-        )}
-
-        {error && <div className="error-message">{error}</div>}
-
-        <button
-          className="primary-button"
-          type="button"
-          onClick={handleSubmit}
-          disabled={!email || !password || (mode === "register" && (!name.trim() || !confirmPassword))}
-        >
-          {mode === "login" ? "Sign in" : "Create account"}
-        </button>
-
-        <button
-          className="secondary-button"
-          type="button"
-          onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
-            setError("");
-          }}
-        >
-          {mode === "login" ? "Create an account" : "Already have an account? Sign in"}
-        </button>
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => handleModeChange(mode === "login" ? "register" : "login")}
+              className="text-indigo-600 hover:text-indigo-500"
+            >
+              {mode === "login" ? "Need an account? Register" : "Already have an account? Sign in"}
+            </button>
+          </div>
+        </form>
       </div>
-    </main>
+    </div>
   );
 }

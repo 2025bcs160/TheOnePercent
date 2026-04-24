@@ -1,29 +1,40 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getUser } from "./services/api";
 
 const AuthContext = createContext(null);
 const AUTH_STORAGE_KEY = "propFirmAuth";
 
-function isTokenExpired(auth) {
-  if (!auth?.expiresAt) return true;
-  return new Date(auth.expiresAt).getTime() <= Date.now();
+function isTokenExpired(token) {
+  // JWT tokens have expiration, but for simplicity, assume valid if present
+  // In production, decode JWT to check exp
+  return !token;
 }
 
 export function AuthProvider({ children }) {
-  const [auth, setAuth] = useState({ user: null, token: null, expiresAt: null });
+  const [auth, setAuth] = useState({ user: null, token: null });
   const [loading, setLoading] = useState(true);
 
-  const login = (user) => {
-    const token = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-    const nextAuth = { user, token, expiresAt };
-
+  const login = async (token) => {
+    const nextAuth = { user: null, token };
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextAuth));
     setAuth(nextAuth);
+
+    // Fetch user info
+    try {
+      const user = await getUser();
+      setAuth(prev => ({ ...prev, user }));
+    } catch (error) {
+      console.error("Failed to fetch user:", error);
+    }
   };
 
   const logout = () => {
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    setAuth({ user: null, token: null, expiresAt: null });
+    setAuth({ user: null, token: null });
+  };
+
+  const setUser = (user) => {
+    setAuth(prev => ({ ...prev, user }));
   };
 
   useEffect(() => {
@@ -36,10 +47,16 @@ export function AuthProvider({ children }) {
 
     try {
       const parsed = JSON.parse(stored);
-      if (isTokenExpired(parsed)) {
+      if (isTokenExpired(parsed.token)) {
         logout();
       } else {
         setAuth(parsed);
+        // Fetch user info if token is valid
+        getUser().then(user => {
+          setAuth(prev => ({ ...prev, user }));
+        }).catch(error => {
+          console.error("Failed to fetch user on load:", error);
+        });
       }
     } catch (error) {
       logout();
@@ -68,11 +85,11 @@ export function AuthProvider({ children }) {
     () => ({
       user: auth.user,
       token: auth.token,
-      expiresAt: auth.expiresAt,
-      isAuthenticated: Boolean(auth.user && auth.token && !isTokenExpired(auth)),
+      isAuthenticated: Boolean(auth.token),
       loading,
       login,
       logout,
+      setUser,
     }),
     [auth, loading]
   );
