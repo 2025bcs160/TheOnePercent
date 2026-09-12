@@ -1,89 +1,420 @@
-/* TheOnePercent — theme
-   -------------------------------------------------------------------
-   Loaded in <head>, synchronously, before any stylesheet paints. That
-   ordering is the whole point: set data-theme late and the user sees a
-   white flash before the dark UI arrives.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TheOnePercent — trade with discipline, not luck</title>
+<meta name="description" content="Public market summary, chart preview, a disciplined trading journal and the calculators that stop you oversizing. Forex, crypto, futures and indices.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233654ff'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='600' fill='white' text-anchor='middle'%3E1%25%3C/text%3E%3C/svg%3E">
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/shell.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="assets/landing.css">
+</head>
+<!-- data-auth="out": the cover page always shows the logged-out nav -->
+<body data-page="none" data-depth="0" data-auth="out">
 
-   Order of precedence:
-     1. an explicit choice the user made before  (stored)
-     2. dark                                     (our default)
+<!-- Top navigation, mobile sheet and the right-edge rail are injected by
+     assets/shell.js so every screen shares one implementation. -->
 
-   The OS preference is deliberately NOT consulted. "Dark first" has to
-   mean something: most desktops report light, so honouring the system
-   would quietly make light the default for almost everybody, which is
-   the opposite of the decision. One click in the rail switches it and
-   that choice is remembered forever.
+<!-- ============================================================ ticker tape -->
+<div class="tape" id="tape" aria-label="Live market ticker">
+  <div class="tape-track" id="tape-track"></div>
+</div>
 
-   Storage is wrapped because sandboxed preview frames and private
-   windows throw on access — a blocked store degrades to per-page.
+<main id="main">
 
-   Anything drawn to a canvas reads its colours from CSS variables, so
-   after a switch we dispatch a resize event, which every canvas on the
-   site already listens to in order to redraw itself.
-   ------------------------------------------------------------------- */
+  <!-- ========================================================== hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Trade with discipline,<em>not luck.</em></h1>
+        <p class="lede">Journal every trade, size every position, and learn the craft — across Forex, Crypto, Futures and Indices.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary btn-lg" href="pages/sign-up.html">Start free →</a>
+          <a class="btn btn-quiet btn-lg" href="#summary">See a demo</a>
+        </div>
+      </div>
 
-window.Theme = (() => {
-  "use strict";
+      <!-- basic chart preview, visible before sign-up -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <span class="pair">EURUSD <span>· 1H</span></span>
+          <span class="last mono" id="chart-last">1.0842</span>
+          <span class="pill up" id="chart-chg">+0.38%</span>
+          <div class="tf-row" role="tablist" aria-label="Chart timeframe">
+            <button role="tab" data-tf="1H" aria-selected="true">1H</button>
+            <button role="tab" data-tf="4H" aria-selected="false">4H</button>
+            <button role="tab" data-tf="1D" aria-selected="false">1D</button>
+          </div>
+        </div>
+        <div class="chart-canvas">
+          <canvas id="chart" role="img" aria-label="EURUSD hourly candlestick preview"></canvas>
+          <div class="chart-tip" id="chart-tip" aria-hidden="true"></div>
+        </div>
+        <div class="chart-foot">
+          <span><i class="dot" aria-hidden="true"></i>Live preview · full charts after sign-up</span>
+          <span id="chart-sync">updated just now</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  const KEY = "onepercent:theme";
-  const VALID = ["dark", "light"];
+  <!-- ========================================================== market summary -->
+  <section class="summary" id="summary">
+    <div class="wrap">
+      <div class="summary-head">
+        <h2>Market summary</h2>
+        <p>Live snapshot across every market you trade</p>
+      </div>
 
-  function store() {
-    try {
-      const s = window[["local", "Storage"].join("")];
-      s.setItem("__t__", "1");
-      s.removeItem("__t__");
-      return s;
-    } catch (e) {
-      return null;
-    }
-  }
+      <div class="summary-grid">
+        <div class="card featured">
+          <div class="label">S&amp;P 500 index</div>
+          <div class="big mono" id="feat-price">5,431.60</div>
+          <div class="delta" id="feat-delta">
+            <span class="mono" id="feat-abs">+42.18</span>
+            <span class="pill up" id="feat-pct">+0.78%</span>
+          </div>
+          <div class="spark">
+            <canvas id="feat-spark" role="img" aria-label="S&amp;P 500 intraday trend"></canvas>
+          </div>
+        </div>
 
-  let memory = null;
+        <div class="card table-card">
+          <div class="table-head">
+            <h3>Major markets</h3>
+            <span id="summary-sync">updated just now</span>
+          </div>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Symbol</th>
+                  <th scope="col">Asset class</th>
+                  <th scope="col" class="num">Last</th>
+                  <th scope="col" class="num">Chg %</th>
+                  <th scope="col">Trend</th>
+                </tr>
+              </thead>
+              <tbody id="market-body"></tbody>
+            </table>
+          </div>
+          <div class="table-foot">
+            <span>Forex · Crypto · Futures · Indices · Commodities</span>
+            <span>Indicative prices, refreshed in place</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  function saved() {
-    try {
-      const s = store();
-      const v = s ? s.getItem(KEY) : memory;
-      return VALID.includes(v) ? v : null;
-    } catch (e) {
-      return VALID.includes(memory) ? memory : null;
-    }
-  }
+  <!-- ========================================================== markets screener -->
+  <section class="band alt" id="screener">
+    <div class="wrap reveal">
+      <div class="band-head">
+        <div>
+          <h2>Every market, one screener</h2>
+          <p>Sort by change or turnover, filter by asset class. Prices refresh in place.</p>
+        </div>
+        <div class="seg" id="screener-seg" role="tablist" aria-label="Asset class filter"></div>
+      </div>
 
-  function resolve() {
-    return saved() || "dark";
-  }
+      <div class="card table-card screener">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" data-sort="symbol" role="columnheader">Symbol <i aria-hidden="true"></i></th>
+                <th scope="col" data-sort="cls" role="columnheader">Asset class <i aria-hidden="true"></i></th>
+                <th scope="col" class="num" data-sort="price" role="columnheader">Last <i aria-hidden="true"></i></th>
+                <th scope="col" class="num" data-sort="chg" role="columnheader">Chg % <i aria-hidden="true"></i></th>
+                <th scope="col" class="num" data-sort="vol" role="columnheader">Turnover <i aria-hidden="true"></i></th>
+                <th scope="col">Share</th>
+              </tr>
+            </thead>
+            <tbody id="screener-body"></tbody>
+          </table>
+          <p id="screener-empty" hidden style="padding:18px;color:var(--muted);font-size:13.5px">
+            No symbols in this class yet.
+          </p>
+        </div>
+        <div class="table-foot">
+          <span>27 symbols · indicative prices</span>
+          <span>Click a column to sort</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  function apply(theme, remember) {
-    const next = VALID.includes(theme) ? theme : "dark";
-    document.documentElement.setAttribute("data-theme", next);
-    if (remember) {
-      memory = next;
-      try {
-        const s = store();
-        if (s) s.setItem(KEY, next);
-      } catch (e) {
-        /* memory only */
-      }
-    }
-    if (remember) {
-      /* let the page know: canvases redraw, and the rail updates its label */
-      window.dispatchEvent(new CustomEvent("themechange", { detail: { theme: next } }));
-      window.dispatchEvent(new Event("resize"));
-    }
-    return next;
-  }
+  <!-- ========================================================== heatmap -->
+  <section class="band" id="heatmap">
+    <div class="wrap reveal">
+      <div class="band-head">
+        <div>
+          <h2>Market heatmap</h2>
+          <p>Where the day is green and where it is bleeding, at a glance.</p>
+        </div>
+        <a class="more" href="#screener">Open in screener →</a>
+      </div>
+      <div class="heat" id="heat"></div>
+      <div class="heat-legend">
+        <span>−3%</span>
+        <span class="ramp" aria-hidden="true">
+          <i style="background:hsl(356 58% 34%)"></i>
+          <i style="background:hsl(356 58% 42%)"></i>
+          <i style="background:hsl(0 0% 62%)"></i>
+          <i style="background:hsl(153 62% 42%)"></i>
+          <i style="background:hsl(153 62% 33%)"></i>
+        </span>
+        <span>+3%</span>
+        <span style="margin-left:8px">Colour is the day change, not the size of the position.</span>
+      </div>
+    </div>
+  </section>
 
-  /* run immediately — this file is intentionally blocking in <head> */
-  apply(resolve(), false);
+  <!-- ========================================================== top movers -->
+  <section class="band alt" id="movers">
+    <div class="wrap reveal">
+      <div class="band-head">
+        <div>
+          <h2>Today's movers</h2>
+          <p>Biggest swings and heaviest turnover across the universe.</p>
+        </div>
+      </div>
+      <div class="movers">
+        <div class="card mover-card">
+          <h3>Gainers <span class="pill up">day</span></h3>
+          <div id="movers-gain"></div>
+        </div>
+        <div class="card mover-card">
+          <h3>Losers <span class="pill down">day</span></h3>
+          <div id="movers-lose"></div>
+        </div>
+        <div class="card mover-card">
+          <h3>Most active <span class="pill">turnover</span></h3>
+          <div id="movers-active"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  return {
-    current: () => document.documentElement.getAttribute("data-theme") || "dark",
-    set: (t) => apply(t, true),
-    toggle() {
-      return apply(this.current() === "dark" ? "light" : "dark", true);
-    },
-    isExplicit: () => !!saved(),
-  };
-})();
+  <!-- ========================================================== what you get -->
+  <section class="band" id="tools">
+    <div class="wrap">
+      <div class="band-head reveal">
+        <div>
+          <h2>What happens after the chart</h2>
+          <p>The chart is the easy part. These three screens are where the one percent is made.</p>
+        </div>
+      </div>
+
+      <!-- journal -->
+      <article class="feature reveal">
+        <div class="f-copy">
+          <p class="eyebrow">Trading journal</p>
+          <h3>Log the trade while it is still honest</h3>
+          <p>Entry, stop, target, screenshot and how you felt — captured as you take the trade, not reconstructed from memory a week later.</p>
+          <ul>
+            <li>Grouped by setup, so patterns surface before your balance does</li>
+            <li>R-multiple maths handled for you</li>
+            <li>Every entry is yours — export or delete it whenever</li>
+          </ul>
+          <a class="btn btn-primary" href="pages/sign-up.html">Start journalling</a>
+        </div>
+        <div class="card mock" aria-hidden="true">
+          <div class="mock-top">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>Journal · this week</span>
+          </div>
+          <div class="mock-body">
+            <div class="jrow"><span class="j-date">11 Sep</span><span><b>EURUSD</b> · London breakout</span><span class="tag">1% risk</span><span class="j-r up">+2.4R</span></div>
+            <div class="jrow"><span class="j-date">10 Sep</span><span><b>NQ1!</b> · Failed retest</span><span class="tag">1% risk</span><span class="j-r down">−1.0R</span></div>
+            <div class="jrow"><span class="j-date">10 Sep</span><span><b>BTCUSD</b> · Range fade</span><span class="tag">0.5% risk</span><span class="j-r up">+1.1R</span></div>
+            <div class="jrow"><span class="j-date">09 Sep</span><span><b>XAUUSD</b> · News fade</span><span class="tag">rule break</span><span class="j-r down">−1.0R</span></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- calculators -->
+      <article class="feature flip reveal">
+        <div class="f-copy">
+          <p class="eyebrow">Position calculators</p>
+          <h3>One percent, worked out for you</h3>
+          <p>Type the account, the stop distance and the instrument. Get lots, contracts or units — before the setup runs away.</p>
+          <ul>
+            <li>Forex lots, futures contracts, crypto units and index CFDs</li>
+            <li>Risk-of-ruin and R-multiple projections</li>
+            <li>Warns you when a size breaks your own rule</li>
+          </ul>
+          <a class="btn btn-quiet" href="pages/calculators.html">Open the calculator</a>
+        </div>
+        <div class="card mock" aria-hidden="true">
+          <div class="mock-top">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>Position size · EURUSD</span>
+          </div>
+          <div class="mock-body calc-mock">
+            <div class="calc-field"><span>Account balance</span><span>$4,000.00</span></div>
+            <div class="calc-field"><span>Risk per trade</span><span>1.00%</span></div>
+            <div class="calc-field"><span>Stop distance</span><span>18 pips</span></div>
+            <div class="calc-out"><span>Position size</span><b>0.22 lots</b></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- learn -->
+      <article class="feature reveal">
+        <div class="f-copy">
+          <p class="eyebrow">Learn</p>
+          <h3>A path, not a playlist</h3>
+          <p>Short lessons that unlock in order, each one tied to something you then do in the journal or the calculator.</p>
+          <ul>
+            <li>Risk first, setups second — the order that keeps accounts alive</li>
+            <li>Built for a Kampala 4G connection: text and diagrams, not 4K video</li>
+            <li>Progress saved to your profile, so you never lose your place</li>
+          </ul>
+          <a class="btn btn-quiet" href="pages/learn.html">See the path</a>
+        </div>
+        <div class="card mock" aria-hidden="true">
+          <div class="mock-top">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <span>Learn · foundations</span>
+          </div>
+          <div class="mock-body learn-mock">
+            <div class="lesson done"><i>✓</i><span>Why one percent<small>6 min read</small></span><span class="tag">done</span></div>
+            <div class="lesson done"><i>✓</i><span>Stops before targets<small>8 min read</small></span><span class="tag">done</span></div>
+            <div class="lesson"><i>3</i><span>Reading a candle honestly<small>9 min read</small></span><span class="tag">next</span></div>
+            <div class="lesson"><i>4</i><span>Journalling a loss<small>7 min read</small></span><span class="tag">locked</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========================================================== economic calendar -->
+  <section class="band alt" id="calendar">
+    <div class="wrap reveal">
+      <div class="band-head">
+        <div>
+          <h2>On the calendar today</h2>
+          <p>Know what is about to move the market before you size the trade.</p>
+        </div>
+        <a class="more" href="pages/markets.html">Full calendar →</a>
+      </div>
+      <div class="cal-grid">
+        <div class="card cal-item">
+          <span class="c-top"><span>10:00 GMT</span><span class="impact med" aria-label="Medium impact"><i></i><i></i><i></i></span></span>
+          <b>EU industrial production</b>
+          <small>Euro area · expected +0.3% m/m</small>
+        </div>
+        <div class="card cal-item">
+          <span class="c-top"><span>12:30 GMT</span><span class="impact high" aria-label="High impact"><i></i><i></i><i></i></span></span>
+          <b>US core CPI</b>
+          <small>United States · expected +0.2% m/m</small>
+        </div>
+        <div class="card cal-item">
+          <span class="c-top"><span>14:00 GMT</span><span class="impact low" aria-label="Low impact"><i></i><i></i><i></i></span></span>
+          <b>Crude oil inventories</b>
+          <small>United States · prior −1.4M barrels</small>
+        </div>
+        <div class="card cal-item">
+          <span class="c-top"><span>18:00 GMT</span><span class="impact high" aria-label="High impact"><i></i><i></i><i></i></span></span>
+          <b>FOMC rate decision</b>
+          <small>United States · hold expected</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== community ideas -->
+  <section class="band" id="ideas">
+    <div class="wrap reveal">
+      <div class="band-head">
+        <div>
+          <h2>Ideas, with the risk shown</h2>
+          <p>Published entries from the community. Every one shows the stop and the size, never just the win.</p>
+        </div>
+        <a class="more" href="pages/journal.html">Browse ideas →</a>
+      </div>
+      <div class="ideas">
+        <article class="card idea">
+          <div class="idea-head"><span class="who">AK</span><span>Achieng K. · 2h ago</span><span class="tag">Forex</span></div>
+          <h3>EURUSD holding the London low</h3>
+          <div class="idea-spark"><canvas data-idea-spark="EURUSD" data-idea-dir="up" aria-hidden="true"></canvas></div>
+          <p>Third test of 1.0810 with lower highs on the retrace. Long on the reclaim, stop under the session low.</p>
+          <div class="idea-meta"><span>risk 1.0%</span><span>·</span><span>stop 18 pips</span><span>·</span><span>target 2.5R</span></div>
+        </article>
+        <article class="card idea">
+          <div class="idea-head"><span class="who">SP</span><span>Simon P. · 5h ago</span><span class="tag">Crypto</span></div>
+          <h3>BTCUSD range fade, not a breakout</h3>
+          <div class="idea-spark"><canvas data-idea-spark="BTCUSD" data-idea-dir="up" aria-hidden="true"></canvas></div>
+          <p>Volume is falling into the highs, so I am fading the edge with half size rather than chasing the break.</p>
+          <div class="idea-meta"><span>risk 0.5%</span><span>·</span><span>stop 640</span><span>·</span><span>target 1.8R</span></div>
+        </article>
+        <article class="card idea">
+          <div class="idea-head"><span class="who">MN</span><span>Moses N. · yesterday</span><span class="tag">Futures</span></div>
+          <h3>NQ1! I was wrong, here is why</h3>
+          <div class="idea-spark"><canvas data-idea-spark="NQ1!" data-idea-dir="down" aria-hidden="true"></canvas></div>
+          <p>Took the retest long into a falling 20 EMA. Stopped for −1R. Logged as a rule break: no longs under the average.</p>
+          <div class="idea-meta"><span>result −1.0R</span><span>·</span><span>rule break</span><span>·</span><span>logged</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== numbers band -->
+  <section class="band alt" id="numbers">
+    <div class="wrap reveal">
+      <div class="stats">
+        <div class="stat"><b>1%</b><span>Maximum risk the calculator will suggest by default</span></div>
+        <div class="stat"><b>5</b><span>Asset classes in one screener: forex, crypto, futures, indices, commodities</span></div>
+        <div class="stat"><b>&lt;2s</b><span>Target first load on a Kampala 4G connection</span></div>
+        <div class="stat"><b>0</b><span>Trades ranked by profit on the leaderboard — discipline only</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================== closing cta -->
+  <section class="close-cta">
+    <div class="wrap">
+      <h2>Discipline compounds. Start tonight.</h2>
+      <p>Free to journal, free to size, free to learn. No broker connection, no execution, no one selling you signals.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary btn-lg" href="pages/sign-up.html">Create a free account</a>
+        <a class="btn btn-quiet btn-lg" href="#summary">See the markets first</a>
+      </div>
+      <p class="fine">Educational and journaling tools only. Nothing here is investment advice.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================================================ footer links -->
+<footer class="site-foot">
+  <div class="wrap">
+    <nav class="foot-links" aria-label="Footer">
+      <a href="#summary">Forex</a>
+      <a href="#summary">Crypto</a>
+      <a href="#summary">Futures</a>
+      <a href="#summary">Stocks &amp; Indices</a>
+      <a href="#summary">Commodities</a>
+      <a href="pages/journal.html">Journal</a>
+      <a href="pages/calculators.html">Calculators</a>
+      <a href="pages/learn.html">Learn</a>
+    </nav>
+    <div class="foot-base">
+      <span>TheOnePercent · Discipline compounds.</span>
+      <span>Educational and journaling tools only. No broker execution, no investment advice.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/shell.js"></script>
+<script src="app.js"></script>
+<script src="assets/landing.js"></script>
+</body>
+</html>

@@ -155,6 +155,8 @@ window.Shell = (() => {
     cal: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3.4" y="4.6" width="13.2" height="11.4" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M3.4 8.2h13.2M7.2 3.4v2.4M12.8 3.4v2.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
     bell: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M6 9a4 4 0 1 1 8 0c0 3 1.2 4.2 1.2 4.2H4.8S6 12 6 9Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8.6 15.4a1.6 1.6 0 0 0 2.8 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
     user: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="7.6" r="2.9" stroke="currentColor" stroke-width="1.4"/><path d="M4.4 16c.7-2.7 2.9-4 5.6-4s4.9 1.3 5.6 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+    moon: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M15.4 12.4A6 6 0 0 1 7.6 4.6a6 6 0 1 0 7.8 7.8Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+    sun: '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.4" stroke="currentColor" stroke-width="1.4"/><path d="M10 2.6v2M10 15.4v2M2.6 10h2M15.4 10h2M4.8 4.8l1.4 1.4M13.8 13.8l1.4 1.4M15.2 4.8l-1.4 1.4M6.2 13.8l-1.4 1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
   };
 
   /* ---------------------------------------------------------- nav markup */
@@ -325,15 +327,16 @@ window.Shell = (() => {
     });
   }
 
+  /* Panel tabs, then a divider, then the two pinned utilities. The order
+     is fixed on purpose — muscle memory only forms if nothing moves. */
   function railHTML() {
     const items = [
       ["watchlist", "Watchlist", ICON.star],
       ["sessions", "Session clock", ICON.clock],
       ["calendar", "Economic calendar", ICON.cal],
       ["alerts", "Alerts", ICON.bell, true],
-      ["account", "Account", ICON.user],
     ];
-    return items
+    const panels = items
       .map(
         ([id, tip, icon, badge]) =>
           `<button data-rail="${id}" data-tip="${tip}" aria-label="${tip}" aria-expanded="false" aria-controls="rp-${id}">
@@ -341,6 +344,15 @@ window.Shell = (() => {
            </button>`
       )
       .join("");
+
+    const dark = !window.Theme || window.Theme.current() === "dark";
+    const themeBtn = `<button id="shell-theme" data-tip="${
+      dark ? "Light theme" : "Dark theme"
+    }" aria-label="Switch to ${dark ? "light" : "dark"} theme">${dark ? ICON.sun : ICON.moon}</button>`;
+
+    const accountBtn = `<button data-rail="account" data-tip="Account" aria-label="Account" aria-expanded="false" aria-controls="rp-account">${ICON.user}</button>`;
+
+    return `${panels}<span class="rail-div" aria-hidden="true"></span>${themeBtn}${accountBtn}`;
   }
 
   function panelHTML(id) {
@@ -453,6 +465,7 @@ window.Shell = (() => {
       rail.innerHTML = railHTML();
       body.appendChild(rail);
       wireRail(rail);
+      wireTheme(rail);
     }
 
     $$("[data-shell-logout]").forEach((el) =>
@@ -546,7 +559,7 @@ window.Shell = (() => {
       ).slice(0, 7);
 
       if (!hits.length) {
-        panel.innerHTML = `<div class="sr-empty">Nothing for “${q}”. Try a symbol like EURUSD, or “risk”.</div>`;
+        panel.innerHTML = `<div class="sr-empty">Nothing for "${q}". Try a symbol like EURUSD, or "risk".</div>`;
       } else {
         let html = "";
         let group = "";
@@ -587,6 +600,27 @@ window.Shell = (() => {
         items[active].click();
       }
     });
+  }
+
+  /* ---------------------------------------------------------- theme */
+
+  function wireTheme(rail) {
+    const btn = $("#shell-theme", rail);
+    if (!btn || !window.Theme) return;
+
+    function sync() {
+      const dark = window.Theme.current() === "dark";
+      btn.innerHTML = dark ? ICON.sun : ICON.moon;
+      btn.dataset.tip = dark ? "Light theme" : "Dark theme";
+      btn.setAttribute("aria-label", "Switch to " + (dark ? "light" : "dark") + " theme");
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.Theme.toggle();
+    });
+    window.addEventListener("themechange", sync);
+    sync();
   }
 
   /* ---------------------------------------------------------- rail wiring */
@@ -689,6 +723,7 @@ window.Shell = (() => {
 
   return {
     paths: P,
+    icons: ICON,
     profile,
     saveProfile,
     clearProfile,
