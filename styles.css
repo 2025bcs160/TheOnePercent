@@ -50,7 +50,7 @@ h1 em {
   border: 1px solid var(--line);
   border-radius: var(--r-l);
   padding: 14px 16px 10px;
-  box-shadow: 0 10px 34px rgba(14, 20, 32, 0.06);
+  box-shadow: var(--shadow-card);
 }
 
 .chart-head {
@@ -119,7 +119,7 @@ h1 em {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-s);
-  box-shadow: 0 8px 22px rgba(14, 20, 32, 0.12);
+  box-shadow: var(--shadow-m);
   font-family: var(--mono);
   font-size: 11px;
   color: var(--ink);

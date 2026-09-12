@@ -37,7 +37,7 @@
   --surface-2: #fbfcfe;
   --line: #e3e7ef;
   --line-soft: #eef1f6;
-  --line-strong: #ccd3e0;
+  --line-strong: #c6cfe6;
   --tint: #fafbff;
   --disabled: #b7c0e8;
 
@@ -45,9 +45,9 @@
   --down: #c7303a;
   --up-soft: #e7f5ec;
   --down-soft: #fbeaeb;
-  --down-line: #f0c2c5;
+  --down-line: #f2c6c9;
   --warn-soft: #fff7e8;
-  --warn-line: #f0dcb0;
+  --warn-line: #f2dfaf;
   --warn-ink: #8a6416;
 
   /* always-dark panels (auth brand rail, closing CTA) — dark in both themes */

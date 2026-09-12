@@ -238,14 +238,14 @@
   padding: 12px;
   border-radius: var(--r-s);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  color: #fff;
+  color: var(--on-brand);
   text-decoration: none;
   transition: transform 0.12s ease;
 }
 
 .heat-tile.pale {
   color: var(--ink);
-  border-color: rgba(14, 20, 32, 0.1);
+  border-color: var(--line);
 }
 
 .heat-tile.pale small {
@@ -746,8 +746,8 @@
 .close-cta {
   padding: 64px 0;
   border-top: 1px solid var(--line);
-  background: var(--ink);
-  color: #fff;
+  background: var(--invert-bg);
+  color: var(--on-brand);
   text-align: center;
 }
 
@@ -774,7 +774,7 @@
 .close-cta .btn-quiet {
   background: transparent;
   border-color: rgba(255, 255, 255, 0.28);
-  color: #fff;
+  color: var(--on-brand);
 }
 
 .close-cta .btn-quiet:hover {

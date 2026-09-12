@@ -76,7 +76,11 @@
     if (/\d/.test(v)) score++;
     const pct = (score / 4) * 100;
     strengthFill.style.width = pct + "%";
-    const colors = ["#C7303A", "#C7303A", "#E0A825", "#14824A", "#14824A"];
+    const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const weak = css("--down") || "#c7303a";
+    const mid = css("--warn-ink") || "#8a6416";
+    const good = css("--up") || "#14824a";
+    const colors = [weak, weak, mid, good, good];
     strengthFill.style.background = colors[score];
     const labels = ["Too short", "Weak", "Fair", "Strong", "Strong"];
     strengthHint.textContent = v

@@ -119,15 +119,15 @@
 }
 
 .signup-submit-row .btn[disabled] {
-  background: #b7c0e8;
+  background: var(--disabled);
   cursor: not-allowed;
 }
 
 .verify-note {
   margin-top: 20px;
-  background: #fff7e8;
-  border: 1px solid #f2dfaf;
-  color: #8a6416;
+  background: var(--warn-soft);
+  border: 1px solid var(--warn-line);
+  color: var(--warn-ink);
   border-radius: var(--r-s);
   padding: 11px 14px;
   font-size: 12.8px;

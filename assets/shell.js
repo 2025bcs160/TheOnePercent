@@ -559,7 +559,7 @@ window.Shell = (() => {
       ).slice(0, 7);
 
       if (!hits.length) {
-        panel.innerHTML = `<div class="sr-empty">Nothing for "${q}". Try a symbol like EURUSD, or "risk".</div>`;
+        panel.innerHTML = `<div class="sr-empty">Nothing for “${q}”. Try a symbol like EURUSD, or “risk”.</div>`;
       } else {
         let html = "";
         let group = "";

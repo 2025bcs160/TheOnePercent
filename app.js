@@ -272,7 +272,7 @@
     ctx.setLineDash([]);
     ctx.fillStyle = css("--brand");
     ctx.fillRect(plotW + 2, ly - 8, padR - 4, 16);
-    ctx.fillStyle = "#fff";
+    ctx.fillStyle = css("--on-brand");
     ctx.textAlign = "center";
     ctx.fillText(fmt(last.c, PAIR.dec), plotW + 2 + (padR - 4) / 2, ly);
 

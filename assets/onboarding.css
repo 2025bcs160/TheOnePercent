@@ -39,7 +39,7 @@
   height: 24px;
   border-radius: 7px;
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -172,7 +172,7 @@
 }
 
 .ob-card:hover {
-  border-color: #c6cfe6;
+  border-color: var(--line-strong);
 }
 
 .ob-card:focus-visible {
@@ -182,7 +182,7 @@
 
 .ob-card[aria-pressed="true"] {
   border-color: var(--brand);
-  background: #fafbff;
+  background: var(--tint);
   box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
@@ -269,7 +269,7 @@
 }
 
 .ob-level:hover {
-  border-color: #c6cfe6;
+  border-color: var(--line-strong);
 }
 
 .ob-level input {
@@ -282,7 +282,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 1.5px solid #c6cfe6;
+  border: 1.5px solid var(--line-strong);
   flex-shrink: 0;
   margin-top: 2px;
   position: relative;
@@ -301,7 +301,7 @@
 
 .ob-level:has(input:checked) {
   border-color: var(--brand);
-  background: #fafbff;
+  background: var(--tint);
   box-shadow: 0 0 0 3px var(--brand-soft);
 }
 
