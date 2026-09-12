@@ -1,115 +1,11 @@
 /* Dashboard (pages/dashboard.html) — page-specific styling.
    Load after assets/shell.css. */
 
-.page-head {
-  padding: 34px 0 8px;
-}
-
-.page-head h1 {
-  margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-
-.page-head p {
-  margin: 6px 0 0;
-  font-size: 14.5px;
-  color: var(--muted);
-  max-width: 62ch;
-}
-
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 14px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 12.5px;
-  color: var(--ink-700);
-}
-
-.chip.accent {
-  border-color: transparent;
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-
 .dash {
   padding: 22px 0 60px;
 }
 
-.notice {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 14px 16px;
-  margin-bottom: 18px;
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--brand);
-  border-radius: var(--r-m);
-  background: var(--surface);
-}
-
-.notice b {
-  display: block;
-  font-size: 14px;
-}
-
-.notice small {
-  font-size: 12.5px;
-  color: var(--muted);
-}
-
 /* placeholder metric cards */
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.stat {
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-m);
-}
-
-.stat .k {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--faint);
-}
-
-.stat .v {
-  margin-top: 6px;
-  font-family: var(--mono);
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--faint);
-  letter-spacing: -0.02em;
-}
-
-.stat .n {
-  margin-top: 6px;
-  font-size: 11.5px;
-  color: var(--faint);
-}
 
 /* two column body */
 
@@ -121,52 +17,7 @@
   align-items: start;
 }
 
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-l);
-  overflow: hidden;
-}
-
-.panel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--line);
-}
-
-.panel-head h2 {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.panel-head span {
-  font-size: 11.5px;
-  color: var(--faint);
-}
-
-.panel-body {
-  padding: 18px;
-}
-
 /* guided empty state */
-
-.empty h3 {
-  margin: 0 0 6px;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.empty p {
-  margin: 0;
-  font-size: 14px;
-  color: var(--muted);
-  max-width: 52ch;
-}
 
 .steps {
   margin: 18px 0 0;
@@ -283,5 +134,253 @@
   }
   .dash {
     padding-bottom: 86px; /* clear the bottom rail on phones */
+  }
+}
+
+/* ── the live grid ─────────────────────────────────────────────────
+   Only rendered once the journal has something in it. Until then the
+   guided block below holds this space, because a dashboard of zeroes
+   teaches a new trader nothing.                                    */
+
+.dh-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dh-filter {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 2px;
+}
+
+.panel.span-2 {
+  grid-column: 1 / -1;
+}
+
+.panel-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.panel-link:hover {
+  text-decoration: underline;
+}
+
+.muted-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#equity {
+  display: block;
+  width: 100%;
+}
+
+.eq-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.eq-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+}
+
+.dot.brand {
+  background: var(--up);
+}
+
+.dot.down {
+  background: var(--down);
+}
+
+/* ── R by setup ───────────────────────────────────────────────────
+   Diverging bars off a centre line: positive right, negative left,
+   so a losing setup is visible without reading a single number.   */
+
+.bs-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.bs-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.bs-row .lab {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.bs-row .lab small {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.bs-row .track {
+  position: relative;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+/* the centre line is the zero-expectancy mark */
+.bs-row .track::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--line-strong);
+}
+
+.bs-row .track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 3px;
+  background: var(--up);
+}
+
+.bs-row .track i.neg {
+  background: var(--down);
+}
+
+.bs-row .val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+  text-align: right;
+  color: var(--muted);
+}
+
+.bs-row .val.up {
+  color: var(--up);
+}
+
+.bs-row .val.down {
+  color: var(--down);
+}
+
+/* ── recent trades ───────────────────────────────────────────────── */
+
+.rt-scroll {
+  overflow-x: auto;
+  contain: paint;
+}
+
+.rt-scroll table {
+  width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+}
+
+.rt-scroll th {
+  padding: 9px 16px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.rt-scroll th.num {
+  text-align: right;
+}
+
+.rt-scroll td {
+  padding: 11px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.rt-scroll tr:last-child td {
+  border-bottom: 0;
+}
+
+.rt-scroll tbody tr:hover {
+  background: var(--surface-2);
+}
+
+/* Once trades exist the guided block collapses to the watchlist alone,
+   so it spans the full width and lays its rows out in columns rather
+   than leaving half the row empty. */
+.dash-grid.started {
+  margin-top: 18px;
+}
+
+.dash-grid.started > .panel {
+  grid-column: 1 / -1;
+}
+
+.dash-grid.started #watchlist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 28px;
+}
+
+.dash-grid.started .wl-row:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .dh-row {
+    align-items: stretch;
+  }
+
+  .dh-filter {
+    gap: 8px;
+  }
+
+  .dh-filter .sel {
+    flex: 1;
+  }
+
+  .rt-scroll th,
+  .rt-scroll td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  /* setup drops first — the symbol and the R matter more on a phone */
+  .rt-scroll th:nth-child(3),
+  .rt-scroll td:nth-child(3) {
+    display: none;
   }
 }

@@ -9,10 +9,23 @@
      assets/shell.css  →  <page>.css
    ------------------------------------------------------------------- */
 
-:root {
+/* ------------------------------------------------------------ tokens
+   Two themes, one token set. Dark is the default because traders sit in
+   front of these screens at night next to a broker terminal that is
+   already dark; light is a first-class toggle in the right rail.
+
+   Rule for this codebase: no screen ever writes a raw colour. If a new
+   colour is needed, it becomes a token here and gets a dark value in
+   the block below. Otherwise one theme silently rots. */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
   --brand: #3654ff;
   --brand-dark: #2743d6;
   --brand-soft: #eef1ff;
+  --on-brand: #ffffff;
 
   --ink: #0e1420;
   --ink-700: #1b2233;
@@ -21,11 +34,35 @@
 
   --paper: #f6f7fa;
   --surface: #ffffff;
+  --surface-2: #fbfcfe;
   --line: #e3e7ef;
   --line-soft: #eef1f6;
+  --line-strong: #ccd3e0;
+  --tint: #fafbff;
+  --disabled: #b7c0e8;
 
   --up: #14824a;
   --down: #c7303a;
+  --up-soft: #e7f5ec;
+  --down-soft: #fbeaeb;
+  --down-line: #f0c2c5;
+  --warn-soft: #fff7e8;
+  --warn-line: #f0dcb0;
+  --warn-ink: #8a6416;
+
+  /* always-dark panels (auth brand rail, closing CTA) — dark in both themes */
+  --invert-bg: #0e1420;
+
+  --nav-bg: rgba(255, 255, 255, 0.92);
+  --panel-bg: rgba(255, 255, 255, 0.94);
+  --veil: rgba(14, 20, 32, 0.4);
+  --skel-a: #eef1f6;
+  --skel-b: #f7f8fb;
+
+  --shadow-card: 0 1px 2px rgba(14, 20, 32, 0.04), 0 12px 32px rgba(14, 20, 32, 0.06);
+  --shadow-s: 0 8px 26px rgba(14, 20, 32, 0.08);
+  --shadow-m: 0 12px 30px rgba(14, 20, 32, 0.1);
+  --shadow-l: 0 16px 38px rgba(14, 20, 32, 0.14);
 
   --r-s: 8px;
   --r-m: 12px;
@@ -36,6 +73,51 @@
 
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --brand: #5b78ff;
+  --brand-dark: #7d92ff;
+  --brand-soft: rgba(91, 120, 255, 0.16);
+  --on-brand: #ffffff;
+
+  --ink: #e9edf6;
+  --ink-700: #cdd5e6;
+  --muted: #929cb2;
+  --faint: #6d768c;
+
+  --paper: #0b0e15;
+  --surface: #121620;
+  --surface-2: #171c28;
+  --line: #242b3a;
+  --line-soft: #1c222e;
+  --line-strong: #39425a;
+  --tint: #171d2b;
+  --disabled: #2b3345;
+
+  --up: #2ed08a;
+  --down: #ff5f6d;
+  --up-soft: rgba(46, 208, 138, 0.15);
+  --down-soft: rgba(255, 95, 109, 0.15);
+  --down-line: rgba(255, 95, 109, 0.34);
+  --warn-soft: rgba(226, 178, 63, 0.14);
+  --warn-line: rgba(226, 178, 63, 0.32);
+  --warn-ink: #e2b23f;
+
+  --invert-bg: #171d2b;
+
+  --nav-bg: rgba(18, 22, 32, 0.9);
+  --panel-bg: rgba(18, 22, 32, 0.96);
+  --veil: rgba(3, 5, 10, 0.66);
+  --skel-a: #1c222e;
+  --skel-b: #242b3a;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.42);
+  --shadow-s: 0 8px 26px rgba(0, 0, 0, 0.44);
+  --shadow-m: 0 12px 30px rgba(0, 0, 0, 0.5);
+  --shadow-l: 0 16px 38px rgba(0, 0, 0, 0.56);
 }
 
 * {
@@ -121,7 +203,7 @@ button {
 
 .btn-primary {
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
 }
 
 .btn-primary:hover {
@@ -173,7 +255,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--nav-bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -197,7 +279,7 @@ button {
   height: 26px;
   border-radius: 7px;
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   display: grid;
   place-items: center;
   font-family: var(--mono);
@@ -267,7 +349,7 @@ button {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-m);
-  box-shadow: 0 12px 30px rgba(14, 20, 32, 0.1);
+  box-shadow: var(--shadow-m);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-4px);
@@ -386,7 +468,7 @@ button {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-m);
-  box-shadow: 0 14px 34px rgba(14, 20, 32, 0.12);
+  box-shadow: var(--shadow-m);
   display: none;
 }
 
@@ -516,6 +598,10 @@ button {
   inset: 0;
   z-index: 60;
   visibility: hidden;
+  /* the panel parks itself at translateX(100%); without this it still
+     counts toward document scroll width and every page gains a phantom
+     horizontal scrollbar on narrow screens */
+  overflow: hidden;
 }
 
 .sheet.open {
@@ -525,7 +611,7 @@ button {
 .sheet-veil {
   position: absolute;
   inset: 0;
-  background: rgba(14, 20, 32, 0.4);
+  background: var(--veil);
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -611,11 +697,11 @@ button {
   display: grid;
   gap: 6px;
   padding: 7px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--panel-bg);
   backdrop-filter: blur(8px);
   border: 1px solid var(--line);
   border-radius: 14px;
-  box-shadow: 0 8px 26px rgba(14, 20, 32, 0.08);
+  box-shadow: var(--shadow-s);
 }
 
 .rail button {
@@ -650,8 +736,8 @@ button {
   top: 50%;
   transform: translateY(-50%);
   padding: 4px 8px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--invert-bg);
+  color: var(--on-brand);
   border-radius: 6px;
   font-size: 11.5px;
   white-space: nowrap;
@@ -667,6 +753,12 @@ button {
 
 .rail button[aria-expanded="true"]::after {
   opacity: 0;
+}
+
+.rail-div {
+  height: 1px;
+  margin: 3px 5px;
+  background: var(--line);
 }
 
 .rail-badge {
@@ -693,7 +785,7 @@ button {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-m);
-  box-shadow: 0 16px 38px rgba(14, 20, 32, 0.14);
+  box-shadow: var(--shadow-l);
   opacity: 0;
   visibility: hidden;
   transform: translateX(6px);
@@ -776,7 +868,7 @@ button {
 }
 
 .sess-chip.on {
-  background: #e7f5ec;
+  background: var(--up-soft);
   color: var(--up);
 }
 
@@ -799,12 +891,12 @@ button {
 
 .pill.up {
   color: var(--up);
-  background: #e7f5ec;
+  background: var(--up-soft);
 }
 
 .pill.down {
   color: var(--down);
-  background: #fbeaeb;
+  background: var(--down-soft);
 }
 
 .tag {
@@ -834,7 +926,7 @@ table {
 thead th {
   padding: 9px 18px;
   border-bottom: 1px solid var(--line);
-  background: #fbfcfe;
+  background: var(--surface-2);
   font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -856,7 +948,7 @@ tbody tr:last-child td {
 }
 
 tbody tr:hover {
-  background: #fbfcfe;
+  background: var(--surface-2);
 }
 
 th.num,
@@ -891,7 +983,7 @@ td.num {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #eef1f6 25%, #f7f8fb 37%, #eef1f6 63%);
+  background: linear-gradient(90deg, var(--skel-a) 25%, var(--skel-b) 37%, var(--skel-a) 63%);
   background-size: 400% 100%;
   border-radius: 5px;
   animation: shimmer 1.3s infinite linear;
@@ -912,7 +1004,7 @@ td.num {
 
 @keyframes flashUp {
   from {
-    background: #e7f5ec;
+    background: var(--up-soft);
   }
   to {
     background: transparent;
@@ -921,7 +1013,7 @@ td.num {
 
 @keyframes flashDown {
   from {
-    background: #fbeaeb;
+    background: var(--down-soft);
   }
   to {
     background: transparent;
@@ -974,12 +1066,17 @@ td.num {
 @media (max-width: 1240px) {
   .rail {
     background: var(--surface);
-    box-shadow: 0 6px 24px rgba(14, 20, 32, 0.16);
+    box-shadow: var(--shadow-m);
     top: auto;
     bottom: 16px;
     right: 50%;
     transform: translateX(50%);
     grid-auto-flow: column;
+  }
+  .rail-div {
+    width: 1px;
+    height: auto;
+    margin: 5px 3px;
   }
   .rail button::after {
     right: 50%;
@@ -995,6 +1092,12 @@ td.num {
   }
   .rail-panel.open {
     transform: translateX(50%);
+  }
+
+  /* the rail floats over the page once it docks to the bottom, so the
+     last row of content needs somewhere to go */
+  #main {
+    padding-bottom: 76px;
   }
 }
 
