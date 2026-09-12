@@ -1,126 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dashboard — TheOnePercent</title>
+<meta name="description" content="Your TheOnePercent dashboard: a guided start until your first trade is logged.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,600;0,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#0E1420; --ink-700:#1B2233; --paper:#F6F7FA; --surface:#FFFFFF;
-    --line:#E3E7EF; --muted:#68707F; --brand:#3654FF; --brand-dark:#1E2A66; --brand-soft:#EEF1FB;
-    --up:#14824A; --radius-s:8px; --radius-m:12px;
-  }
-  *{box-sizing:border-box;}
-  body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink-700);background:var(--paper);}
-  a{color:inherit;text-decoration:none;}
-  .mono{font-family:'IBM Plex Mono',monospace;}
-
-  header.nav{background:var(--surface);border-bottom:1px solid var(--line);}
-  .nav-row{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:center;gap:26px;height:62px;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;flex-shrink:0;}
-  .badge{width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;}
-  .primary-links{display:flex;align-items:center;gap:20px;font-size:14px;}
-  .primary-links a{font-weight:500;color:var(--muted);}
-  .primary-links a.active{color:var(--ink-700);}
-  .nav-actions{margin-left:auto;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-  .btn-log{background:var(--ink-700);color:#fff;font-weight:600;font-size:13px;padding:8px 14px;border-radius:8px;}
-  .avatar{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;}
-
-  .wrap{max-width:1200px;margin:0 auto;padding:32px;}
-  h1.greeting{font-family:'IBM Plex Serif',serif;font-size:24px;font-weight:600;margin:0 0 4px;}
-  p.sub{color:var(--muted);font-size:14px;margin:0 0 28px;}
-
-  .empty-state{
-    background:var(--surface);border:1.5px dashed #C7CEE0;border-radius:var(--radius-m);
-    padding:52px 32px;text-align:center;margin-bottom:28px;
-  }
-  .empty-state .icon{width:52px;height:52px;border-radius:12px;background:var(--brand-soft);color:var(--brand-dark);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;}
-  .empty-state h2{font-family:'IBM Plex Serif',serif;font-size:20px;font-weight:600;margin:0 0 8px;}
-  .empty-state p{color:var(--muted);font-size:14px;max-width:44ch;margin:0 auto 20px;line-height:1.6;}
-  .btn{font:inherit;font-weight:600;font-size:14px;border-radius:8px;padding:11px 22px;border:1px solid transparent;cursor:pointer;background:var(--brand);color:#fff;}
-  .btn:hover{background:var(--brand-dark);}
-
-  .placeholder-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
-  @media (max-width:900px){ .placeholder-grid{grid-template-columns:repeat(2,1fr);} }
-  .ph-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);padding:18px;opacity:.55;}
-  .ph-card .label{font-size:12px;color:var(--muted);margin-bottom:8px;}
-  .ph-card .val{font-family:'IBM Plex Mono',monospace;font-size:20px;color:#B9C2D4;}
-  .ph-note{font-size:11px;color:var(--muted);margin-top:6px;}
-
-  .profile-note{
-    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-m);
-    padding:18px 20px;font-size:13.5px;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
-  }
-  .profile-note b{color:var(--ink-700);}
-  .reset-link{font-size:12.5px;color:var(--muted);}
-  .reset-link:hover{color:var(--brand);}
-</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233654ff'/%3E%3Ctext x='16' y='21' font-family='monospace' font-size='13' font-weight='600' fill='white' text-anchor='middle'%3E1%25%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/shell.css">
+<link rel="stylesheet" href="../assets/dashboard.css">
 </head>
-<body>
+<!-- one folder deep, logged-in state inferred from the onboarding profile -->
+<body data-page="dashboard" data-depth="1">
 
-<header class="nav">
-  <div class="nav-row">
-    <a href="../index.html" class="brand"><span class="badge">1%</span>THEONEPERCENT</a>
-    <nav class="primary-links">
-      <a href="#" class="active">Dashboard</a>
-      <a href="#">Journal</a>
-      <a href="#">Charts</a>
-      <a href="#">Calculators</a>
-      <a href="#">Learn</a>
-    </nav>
-    <div class="nav-actions">
-      <button class="btn-log">Log trade</button>
-      <div class="avatar" id="avatar">SP</div>
+<main id="main">
+
+  <header class="page-head">
+    <div class="wrap">
+      <h1 id="greeting">Welcome back</h1>
+      <p id="sub">Loading your preferences…</p>
+      <div class="chip-row" id="chips"></div>
+    </div>
+  </header>
+
+  <section class="dash">
+    <div class="wrap">
+
+      <!-- shown only when onboarding saved nothing -->
+      <div class="notice" id="notice" hidden>
+        <span>
+          <b>Nothing saved yet</b>
+          <small>You skipped onboarding, so there are no markets or experience level on file.</small>
+        </span>
+        <a class="btn btn-primary" href="onboarding.html">Pick my markets</a>
+      </div>
+
+      <!-- placeholder metrics: greyed until the journal has data -->
+      <div class="stat-grid">
+        <div class="stat"><div class="k">Trades logged</div><div class="v">0</div><div class="n">Journal is empty</div></div>
+        <div class="stat"><div class="k">Win rate</div><div class="v">—</div><div class="n">Needs 10 trades</div></div>
+        <div class="stat"><div class="k">Avg risk / trade</div><div class="v">—</div><div class="n">Set by the calculator</div></div>
+        <div class="stat"><div class="k">Discipline streak</div><div class="v">0</div><div class="n">Days inside your rules</div></div>
+      </div>
+
+      <div class="dash-grid">
+
+        <!-- guided empty state, per the roadmap: point at the journal,
+             never a wall of zeroes -->
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Start here</h2>
+            <span>3 steps</span>
+          </div>
+          <div class="panel-body empty">
+            <h3>Your dashboard fills itself in</h3>
+            <p>Nothing here is real yet — every widget on this screen is built from your own journal entries, so the first trade you log is what switches it on.</p>
+            <ol class="steps">
+              <li>
+                <span class="num">1</span>
+                <span><b>Size the position first</b><small>Risk one percent, let the calculator turn that into lots or contracts.</small></span>
+              </li>
+              <li>
+                <span class="num">2</span>
+                <span><b>Log the trade as you take it</b><small>Entry, stop, target, screenshot and how you felt — while it is still honest.</small></span>
+              </li>
+              <li>
+                <span class="num">3</span>
+                <span><b>Review it at the end of the week</b><small>The journal groups by setup, so patterns show up long before your balance does.</small></span>
+              </li>
+            </ol>
+            <div class="empty-cta">
+              <a class="btn btn-primary" href="journal.html">Log your first trade</a>
+              <a class="btn btn-quiet" href="calculators.html">Open the calculator</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- proves the onboarding choices carried through -->
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Your markets</h2>
+            <span id="wl-source">from onboarding</span>
+          </div>
+          <div id="watchlist"></div>
+          <div class="panel-foot" id="wl-foot">Indicative prices. Add or remove symbols from the rail.</div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="foot-base">
+      <span>TheOnePercent · Discipline compounds.</span>
+      <span>Educational and journaling tools only. No broker execution, no investment advice.</span>
     </div>
   </div>
-</header>
+</footer>
 
-<div class="wrap">
-  <h1 class="greeting" id="greeting">Welcome to your dashboard</h1>
-  <p class="sub" id="sub-greeting">Nothing logged yet — here's where that changes.</p>
-
-  <div class="empty-state">
-    <div class="icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 3h13l4 4v14H4V3z" stroke="currentColor" stroke-width="1.6"/><path d="M8 10h8M8 14h8M8 18h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-    </div>
-    <h2>Log your first trade</h2>
-    <p>Your equity curve, expectancy, win rate and profit factor all come from here. Nothing to review until something's journalled.</p>
-    <button class="btn">+ New trade</button>
-  </div>
-
-  <div class="placeholder-grid">
-    <div class="ph-card"><div class="label">Net profit</div><div class="val mono">—</div><div class="ph-note">Fills in after your first trade</div></div>
-    <div class="ph-card"><div class="label">Win rate</div><div class="val mono">—</div><div class="ph-note">Fills in after your first trade</div></div>
-    <div class="ph-card"><div class="label">Profit factor</div><div class="val mono">—</div><div class="ph-note">Fills in after your first trade</div></div>
-    <div class="ph-card"><div class="label">Expectancy</div><div class="val mono">—</div><div class="ph-note">Fills in after your first trade</div></div>
-  </div>
-
-  <div class="profile-note" id="profile-note"></div>
-</div>
-
+<script src="../assets/shell.js"></script>
 <script>
-  const raw = localStorage.getItem('onepercent_onboarding');
-  const greeting = document.getElementById('greeting');
-  const sub = document.getElementById('sub-greeting');
-  const noteEl = document.getElementById('profile-note');
+/* Reads back whatever the onboarding screen saved and greets accordingly.
+   Shell.profile() normalises the shape and tolerates blocked storage. */
+(() => {
+  "use strict";
+  const me = Shell.profile();
+  const greeting = document.getElementById("greeting");
+  const sub = document.getElementById("sub");
+  const chips = document.getElementById("chips");
 
-  if(raw){
-    const data = JSON.parse(raw);
-    const marketList = data.markets && data.markets.length ? data.markets.join(', ') : 'no markets selected';
-    const levelLabel = data.level === 'experienced' ? 'Experienced' : 'New to trading';
-    greeting.textContent = data.level === 'experienced'
-      ? 'Welcome back — let’s see the numbers.'
-      : 'Welcome — let’s get your first trade logged.';
-    sub.textContent = `Onboarded for ${marketList}.`;
-    noteEl.innerHTML = `<span>Onboarding saved: <b>${marketList}</b> · <b>${levelLabel}</b></span>
-      <a href="onboarding.html" class="reset-link">Redo onboarding</a>`;
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  if (!me) {
+    document.getElementById("notice").hidden = false;
+    greeting.textContent = part;
+    sub.textContent =
+      "You are signed in as a guest with no preferences saved. Pick your markets and experience level and this page starts adapting to you.";
   } else {
-    noteEl.innerHTML = `<span>No onboarding data found in this browser yet.</span>
-      <a href="onboarding.html" class="reset-link">Go to onboarding</a>`;
-  }
-</script>
+    greeting.textContent = part + (me.name ? ", " + me.name.split(" ")[0] : "");
+    const exp = (me.experience || "").toLowerCase();
+    sub.textContent = exp.includes("new") || exp.includes("begin")
+      ? "You told us you are new to trading, so the Learn path is unlocked first and position sizes stay capped at one percent until ten trades are logged."
+      : exp.includes("exp") || exp.includes("adv")
+        ? "You told us you are experienced, so the journal opens with the full field set and the risk cap is yours to set."
+        : "Your preferences are saved. The journal and calculators are ready when you are.";
 
-</body>
+    const list = me.markets.length ? me.markets : [];
+    chips.innerHTML =
+      list.map((m) => `<span class="chip accent">${m}</span>`).join("") +
+      (me.experience ? `<span class="chip">${me.experience}</span>` : "");
+  }
+
+  /* watchlist mirrors the chosen asset classes */
+  const picked = me && me.markets.length ? me.markets.map((m) => String(m).toLowerCase()) : null;
+  const rows = picked
+    ? Shell.quotes.filter((q) =>
+        picked.some(
+          (p) =>
+            q.cls.toLowerCase().includes(p) ||
+            p.includes(q.cls.toLowerCase()) ||
+            q.symbol.toLowerCase() === p
+        )
+      )
+    : Shell.quotes;
+  const show = rows.length ? rows : Shell.quotes;
+
+  document.getElementById("wl-source").textContent = picked && rows.length ? "from onboarding" : "defaults";
+  document.getElementById("watchlist").innerHTML = show
+    .map((q) => {
+      const up = q.chg >= 0;
+      return `<div class="wl-row">
+        <span><b>${q.symbol}</b><small>${q.name} · ${q.cls}</small></span>
+        <span class="wl-price">${q.price.toLocaleString("en-US", {
+          minimumFractionDigits: q.dec,
+          maximumFractionDigits: q.dec,
+        })}
+        <small class="chg ${up ? "up" : "down"}">${(up ? "+" : "−") + Math.abs(q.chg).toFixed(2)}%</small></span>
+      </div>`;
+    })
+    .join("");
+
+  if (!picked) {
+    document.getElementById("wl-foot").textContent =
+      "Showing the default five until you pick your markets in onboarding.";
+  }
+})();
+</script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
 </html>

@@ -1,0 +1,287 @@
+/* Dashboard (pages/dashboard.html) — page-specific styling.
+   Load after assets/shell.css. */
+
+.page-head {
+  padding: 34px 0 8px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.page-head p {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--ink-700);
+}
+
+.chip.accent {
+  border-color: transparent;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.dash {
+  padding: 22px 0 60px;
+}
+
+.notice {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--r-m);
+  background: var(--surface);
+}
+
+.notice b {
+  display: block;
+  font-size: 14px;
+}
+
+.notice small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* placeholder metric cards */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.stat {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+}
+
+.stat .k {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.stat .v {
+  margin-top: 6px;
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--faint);
+  letter-spacing: -0.02em;
+}
+
+.stat .n {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+/* two column body */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-l);
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel-head span {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.panel-body {
+  padding: 18px;
+}
+
+/* guided empty state */
+
+.empty h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.empty p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.steps {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.steps li:last-child {
+  border-bottom: none;
+}
+
+.steps .num {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.steps b {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.steps small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.empty-cta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+/* watchlist proof panel */
+
+.wl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.wl-row:last-child {
+  border-bottom: none;
+}
+
+.wl-row b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wl-row small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.wl-price {
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.wl-price small {
+  display: block;
+  font-size: 11.5px;
+}
+
+.panel-foot {
+  padding: 11px 18px;
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+@media (max-width: 1000px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .dash-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .page-head {
+    padding-top: 24px;
+  }
+  .page-head h1 {
+    font-size: 23px;
+  }
+  .dash {
+    padding-bottom: 86px; /* clear the bottom rail on phones */
+  }
+}
