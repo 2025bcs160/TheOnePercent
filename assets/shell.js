@@ -35,7 +35,7 @@ window.Shell = (() => {
   const P = {
     home: root + "index.html",
     signup: root + "pages/sign-up.html",
-    login: root + "pages/sign-up.html",
+    login: root + "pages/login.html",
     onboarding: root + "pages/onboarding.html",
     dashboard: root + "pages/dashboard.html",
     journal: root + "pages/journal.html",
