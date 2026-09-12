@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="../assets/auth.css">
 </head>
 <!-- data-auth="out": the login page always shows the logged-out nav -->
-<body data-page="none" data-depth="1" data-auth="out" data-shell="nav">
+<body data-page="none" data-depth="1" data-auth="out" data-shell="none">
 
 <!-- Top navigation is injected by assets/shell.js so it stays identical
      to every other screen. This page skips the right-edge rail (there is
@@ -25,6 +25,10 @@
 
       <!-- ===================================================== brand panel -->
       <aside class="auth-brand">
+        <a href="../index.html" class="brand" style="display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;margin-bottom:56px;color:#fff;text-decoration:none;">
+          <span class="mono" style="width:26px;height:26px;border-radius:7px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;">1%</span>
+          THEONEPERCENT
+        </a>
         <p class="auth-eyebrow mono">WELCOME BACK</p>
         <h1>Discipline compounds.<br><em>Pick up where you left off.</em></h1>
 
