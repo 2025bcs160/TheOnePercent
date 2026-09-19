@@ -148,7 +148,7 @@ Steps 1–7 are complete, plus the pre-trade checklist below. Step 8 (charts) is
 | 7 | Settings — account, risk rules, guardrails, profile, data | done |
 | 8 | Charts and Market Watch (Lightweight Charts) | 1B |
 | 9 | Market context — news, calendar, sentiment | 1B |
-| 10 | Learn — lesson paths and resource library | 1B |
+| 10 | **Learn — lesson paths, quiz gates, resource library** | done |
 | 11 | Backend (`rest` driver), real accounts and verification | 1B |
 | 12 | Leaderboard | 1B, after the backend |
 
@@ -372,3 +372,73 @@ leaving it blank.
 
 `discipline()` weights were deliberately **not** changed. Folding the checklist
 into the score would silently rewrite every past trade's grade.
+
+---
+
+## 3f. Learn: the path, the gates and the library
+
+Twenty-four lessons in four blocks — Foundations and Risk first (beginner),
+Reading the market (intermediate), Build a system (advanced) — about 191
+minutes of reading, ten questions at the end of each block, eighty percent
+to pass. That is the roadmap's specification and it is built as written:
+
+- Lessons run in order. A lesson opens when the one above it is done; a
+  block opens when the block before it was passed at eighty percent.
+- Locked lessons are **greyed, not hidden**, with the reason on the row.
+  You should be able to see what you are working towards.
+- Ten questions, two attempts, then thirty minutes away from it. The
+  cooldown shows the exact time it reopens rather than a vague "later".
+- **Every wrong answer links back to the lesson that answers it** — by
+  question, not by block, so the reading list for the cooldown writes
+  itself.
+- One worked example per market, filtered to the markets chosen in
+  onboarding. A crypto trader reads funding, not swap on a standard lot.
+- Progress is visible in the page header, on every block and in the resume
+  button, which continues exactly where you stopped.
+- A second sub-tab holds the resource library; `learn.html#path`,
+  `#library`, `#glossary` and `#lesson/<id>` are all linkable, the same
+  fragment pattern the calculators use.
+
+### Five things added beyond the roadmap
+
+**1. Lessons recommended by your own journal.** `Store.leaks()` already
+names what is costing money. The path reads it and puts the matching lesson
+at the top with the cost attached: "8 trades sized above your own rule,
+−7.82R — the lesson for this is Sizing from the stop." A course that
+ignores the journal sitting next to it is a blog with a quiz.
+
+**2. A review deck.** Every quiz question enters a five-box Leitner
+schedule — missed questions come back tomorrow, known ones at one, three,
+seven and twenty-one days, then retire. Passing a gate once is not the same
+as knowing it in March.
+
+**3. Real downloads.** The roadmap says PDFs. Ten files ship instead as
+Markdown and CSV generated in the browser from the same content object the
+lessons read, so nothing can 404 and no PDF renderer has to be shipped in
+Phase 1. The journal template is a CSV whose columns are the ones the
+journal importer already expects, so the library round-trips into the app.
+
+**4. An apply step on every lesson.** Each lesson ends in one action inside
+the product — size this in the position-size calculator, set this rail in
+settings, read your own leak panel — because a lesson that ends in "makes
+sense" changes nothing.
+
+**5. A glossary of 75 terms, inline.** Terms are underlined in the prose
+with a definition on hover *and* on keyboard focus, listed in the lesson's
+side rail, searchable on their own sub-tab, and indexed in the shell's
+search box, so "what is expectancy" is answered from any screen.
+
+Two smaller decisions worth writing down. An **experienced** profile can
+sit the beginner gates immediately without reading the block — the gate is
+the proof, so it can be earned early rather than assumed, and the lessons
+are still there when the gate is missed. And the **video slot** is drawn as
+a labelled placeholder saying the recording is in progress, rather than an
+empty player: Phase 1 has no recordings, and a player that does nothing
+reads as a bug.
+
+Progress lives in `Store.learn` — read timestamps, per-block quiz results,
+the review schedule and per-lesson notes — so no screen touches browser
+storage directly and the `rest` driver in step 11 needs no change here.
+The curriculum itself is data in `assets/lessons.js`, which is why the
+shell's search box can index every lesson, term and file without a second
+copy of any of it.
