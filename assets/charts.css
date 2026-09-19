@@ -2056,33 +2056,76 @@ body[data-page="charts"] .lchip {
   font-size: 10.5px;
   color: var(--muted);
   background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  /* `.leg` is pointer-events:none so the chart underneath stays draggable
+     through it. That also killed every button on these chips — hiding,
+     configuring and removing a study from its legend row, which is the way
+     you normally do it, did nothing at all. The chips take their clicks
+     back here; the empty space around them still passes through. */
+  pointer-events: auto;
 }
-body[data-page="charts"] .lchip i {
+/* The colour swatch. Only the swatch is a square — the value next to it is
+   text and was previously rendered inside one of these, 7px wide. */
+body[data-page="charts"] .lchip .lsw {
   width: 7px;
   height: 7px;
   border-radius: 2px;
   flex: 0 0 auto;
+  background: currentColor;
+}
+body[data-page="charts"] .lchip .lnm {
+  color: currentColor;
+  white-space: nowrap;
+}
+body[data-page="charts"] .lchip .lval {
+  font-family: var(--mono);
+  color: var(--ink);
+  white-space: nowrap;
 }
 body[data-page="charts"] .lchip b {
   font-weight: 500;
   color: var(--ink);
 }
-body[data-page="charts"] .lchip .v {
-  font-family: var(--mono);
-  color: var(--muted);
-}
 body[data-page="charts"] .lchip.off {
   opacity: 0.45;
 }
+/* The collapse toggle is a chip rather than a button inside one, so it is not
+   caught by the hover-to-reveal rule below and reads as a control at rest. */
+body[data-page="charts"] .lchip.lmore {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+  padding: 1px 7px;
+  opacity: 1;
+  width: auto;
+  cursor: pointer;
+}
+body[data-page="charts"] .lchip.lmore:hover {
+  color: var(--ink);
+  border-color: var(--brand);
+}
+/* Dim at rest, full strength on hover: three glyphs per study, times six
+   studies, competes with the price action, and the reading is what you came
+   for. They keep their box at rest rather than collapsing to zero width, and
+   that is deliberate — the legend is rebuilt on every live tick, so a button
+   that animates open from nothing restarts that animation a few times a second
+   and can never be hit while data is streaming. A fixed box means the click
+   lands whether or not any transition has finished. */
 body[data-page="charts"] .lchip button {
+  border: 0;
+  background: transparent;
   color: var(--faint);
   font-size: 10px;
+  line-height: 1;
   padding: 0 2px;
   border-radius: 3px;
-  opacity: 0;
+  cursor: pointer;
+  opacity: 0.25;
   transition: opacity 0.12s;
 }
-body[data-page="charts"] .lchip:hover button {
+/* focus-within so the three controls are reachable by keyboard, not just by
+   a pointer that happens to be resting on the chip. */
+body[data-page="charts"] .lchip:hover button,
+body[data-page="charts"] .lchip:focus-within button {
   opacity: 1;
 }
 body[data-page="charts"] .lchip button:hover {

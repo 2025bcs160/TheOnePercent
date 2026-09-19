@@ -3050,7 +3050,16 @@ class Chart {
       ch = b.c - prev.c,
       pct = (ch / prev.c) * 100;
     const cls = ch >= 0 ? "up" : "dn";
-    const chips = this.studies
+    /* The legend floats over the candles, so its height is not free: it grows a
+       row per study and at five it was reaching down into the price action and
+       sitting on the position tool's entry and stop badges. Past LEG_MAX it
+       collapses to a count you click to open, which is what a terminal does
+       once a chart is loaded up. Collapsed is the default because the reason to
+       add a sixth study is rarely to read its number off the legend. */
+    const LEG_MAX = 4;
+    const many = this.studies.length > LEG_MAX;
+    const shown = many && !this.legOpen ? [] : this.studies;
+    const chips = shown
       .map((s) => {
         const S2 = STUDIES[s.id],
           r = this.study(s);
@@ -3059,19 +3068,33 @@ class Chart {
           v = r.lines
             .map((L) =>
               L.data[i] != null
-                ? compact(L.data[i], r.fmtInt, SYMBOLS[this.cfg.sym].digits)
+                ? compact(L.data[i], r.fmtInt, studyDigits(S2, this.cfg.sym))
                 : "",
             )
             .filter(Boolean)
             .slice(0, 3)
             .join(" / ");
+        /* The swatch and the reading are separate elements. They were both
+           `<i>` once, which left the study's value rendered inside a 7px
+           square and spilling out of it. */
         return `<span class="lchip ${s.visible ? "" : "off"}" data-uid="${s.uid}" style="color:${css(s.color) || s.color}">
-        ${S2.name}${paramTag(s)} <i>${v}</i>
-        <button data-act="eye" title="Hide">${s.visible ? "◉" : "◎"}</button>
+        <i class="lsw"></i><span class="lnm">${S2.name}${paramTag(s)}</span>${v ? `<span class="lval">${v}</span>` : ""}
+        <button data-act="eye" title="${s.visible ? "Hide" : "Show"}">${s.visible ? "◉" : "◎"}</button>
         <button data-act="cfg" title="Settings">⚙</button>
         <button data-act="del" title="Remove">✕</button></span>`;
       })
-      .join("");
+      .join("") +
+      (many
+        ? `<button class="lchip lmore" data-act="more" title="${
+            this.legOpen
+              ? "Collapse the study legend"
+              : "Show every study on this chart"
+          }">${
+            this.legOpen
+              ? "fewer ▴"
+              : `${this.studies.length} studies ▾`
+          }</button>`
+        : "");
     const cmp = [...state.compare]
       .map(
         (s, k) =>
@@ -3090,12 +3113,21 @@ class Chart {
           ? `<span class="lchip warn" title="Make the chart taller, or turn a study off, to see them.">${this.hiddenPanes} pane${this.hiddenPanes === 1 ? "" : "s"} hidden — not enough height</span>`
           : ""
       }</div>`;
-    this.leg.querySelectorAll(".lchip [data-act]").forEach(
+    /* Not `.lchip [data-act]`: the collapse toggle carries the action on the
+       chip itself rather than on a button inside one. */
+    this.leg.querySelectorAll("[data-act]").forEach(
       (btn) =>
         (btn.onclick = (e) => {
           e.stopPropagation();
-          const uid = btn.closest(".lchip").dataset.uid,
-            act = btn.dataset.act;
+          const act = btn.dataset.act;
+          /* The collapse toggle is a chip in the same row but belongs to no
+             study, so it is handled before anything looks for a uid. */
+          if (act === "more") {
+            this.legOpen = !this.legOpen;
+            this.legend(d);
+            return;
+          }
+          const uid = btn.closest(".lchip").dataset.uid;
           const s = this.studies.find((x) => x.uid === uid);
           if (!s) return;
           if (act === "eye") {
@@ -3209,17 +3241,15 @@ class Chart {
       .forEach((s) => {
         const r = this.study(s);
         if (!r) return;
+        const sd = studyDigits(STUDIES[s.id], this.cfg.sym);
         (r.lines || []).forEach((L) => {
           if (L.data[i] != null)
-            rows.push([
-              rowName(s, L.name),
-              compact(L.data[i], r.fmtInt, S.digits),
-            ]);
+            rows.push([rowName(s, L.name), compact(L.data[i], r.fmtInt, sd)]);
         });
         if (r.hist && r.hist.data[i] != null)
           rows.push([
             rowName(s, r.hist.name),
-            compact(r.hist.data[i], r.fmtInt, S.digits),
+            compact(r.hist.data[i], r.fmtInt, sd),
           ]);
       });
     this.dw.innerHTML =
@@ -3297,6 +3327,17 @@ function paneDp(span) {
   if (s >= 0.2) return 2;
   if (s >= 0.02) return 3;
   return 4;
+}
+/* How many decimals a study's reading deserves.
+
+   A study drawn on the price axis is a price and must carry the symbol's
+   digits, or a moving average on EURUSD reads 1.08 against candles quoted to
+   five. A study in its own pane is not a price — an RSI rendered at a pair's
+   five decimals is "47.02462", which is five digits of noise on a number
+   nobody reads past the decimal point. Passing null lets `compact` pick a
+   precision from the magnitude instead. */
+function studyDigits(S, sym) {
+  return S && S.where === "sub" ? null : SYMBOLS[sym].digits;
 }
 function compact(v, int, digits) {
   if (v == null || isNaN(v)) return "—";
