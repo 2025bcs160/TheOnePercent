@@ -135,7 +135,7 @@ one persistent filter — date range and account — that every widget reads.
 
 ## 2. Build order
 
-Steps 1–5 and 7 are complete. Step 6 is next.
+Steps 1–7 are complete. Step 8 (charts) is next.
 
 | # | Step | State |
 | --- | --- | --- |
@@ -144,7 +144,7 @@ Steps 1–5 and 7 are complete. Step 6 is next.
 | 3 | Theme system, data layer, simulated feed | done |
 | 4 | Journal — log, filters, detail drawer, import | done |
 | 5 | Calculators and converters | done |
-| 6 | **Dashboard widgets over real journal data** | next |
+| 6 | **Dashboard widgets over real journal data** | done |
 | 7 | Settings — account, risk rules, guardrails, profile, data | done |
 | 8 | Charts and Market Watch (Lightweight Charts) | 1B |
 | 9 | Market context — news, calendar, sentiment | 1B |
@@ -179,6 +179,52 @@ gracefully when a feed fails, lessons gate at eighty percent, and the
 leaderboard shows handles only with the formula printed on the page.
 
 ---
+
+## 3c. Added beyond the original plan: leak detection
+
+The roadmap asked for dashboard widgets over journal data. Widgets were the
+easy half. The screen as specified — net P/L, expectancy, win rate, a curve —
+is entirely descriptive: it says what happened and nothing about what to
+change, and a trader opening it every morning is asking the second question.
+
+So the dashboard now leads with **what is costing you money**, and the
+engine behind it (`Store.leaks()`) separates two kinds of claim:
+
+| | Rules | Patterns |
+| --- | --- | --- |
+| What it is | A rule the user set, broken | A statistical claim about the future |
+| Sample gate | none — one occurrence counts | 3 in the subset, 6 closed in the journal |
+| Priced as | exact arithmetic (excess risk, R past the stop, P&L of the extra entries) | subset expectancy minus the expectancy of the rest of the journal |
+| Shown as | red left edge, "Rule broken" | neutral edge, sample size printed on the card |
+
+Rules detected: sizing above the risk rule, a loss past 1.15R (the stop
+moved), a trade logged with no stop at all, entries past the daily trade
+limit. Patterns detected: entries taken within ninety minutes of closing a
+loss, and the worst session, state of mind, setup, day and instrument.
+
+Three honesty rules are built in and should not be relaxed:
+
+1. A pattern is measured against the rest of the journal, never against
+   zero. A losing session inside a losing month is not a leak.
+2. Every pattern carries its sample size on the card, without exception.
+3. A finding only appears if removing it would have helped. Two cuts over
+   exactly the same trades are deduped — that is one finding said twice.
+
+The panel also names the best setup and the best session. A screen that
+only lists faults gets opened once and never again.
+
+**Open risk** was added alongside it, and it is the only forward-looking
+number on the site: what is at stake right now if every open stop is hit,
+measured against the daily loss rail, so a three percent day is visible
+before it happens. Positions with no stop are counted separately, never
+silently as zero.
+
+The equity curve got a cursor readout — balance, change and date per point
+— because a line without numbers is decoration.
+
+Deliberately **not** built: a setup/session/day grouping toggle on the
+dashboard. The journal's insights tables already do that, and the
+dashboard's job here is diagnosis, not a second copy of the breakdown.
 
 ## 3b. Added beyond the original plan: guardrails
 
