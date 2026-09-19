@@ -180,6 +180,30 @@ leaderboard shows handles only with the formula printed on the page.
 
 ---
 
+## 3d. Calculators: one at a time
+
+The calculators screen shipped as eight panels stacked down one page, two to
+a row. Every one of them worked, and the screen was still wrong: whichever
+calculator you came for was below the fold, and the two-column grid kept a
+calculator you were not using in your eyeline while you typed into one you
+were.
+
+It is now a dropdown — grouped into "before you enter", "what it would
+mean" and "quick conversions" — showing one calculator at a time, with a
+line under it saying in plain words what that calculator answers, because a
+list of eight nouns does not tell a beginner which one they need. Arrows
+step through them for when you do not know what you are looking for.
+
+The choice lives in the URL fragment, which costs nothing and pays for
+itself three times: the back button behaves, `calculators.html#mg` is a
+link straight to margin, and every existing deep link into this page still
+lands on a visible panel instead of a hidden one. It is deliberately not
+saved to settings — a UI preference is not account data, and writing one on
+every click would fire a change event across every open screen for nothing.
+
+The demo-rates badge now hides itself on the compounding calculator, which
+is the one view on the page that uses no rates at all.
+
 ## 3c. Added beyond the original plan: leak detection
 
 The roadmap asked for dashboard widgets over journal data. Widgets were the

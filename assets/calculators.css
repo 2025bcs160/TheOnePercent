@@ -340,3 +340,68 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ------------------------------------------------------------ the picker
+   A control bar, not a card: it is chrome for the panel below it, so it
+   reads quieter than the panel and sits tight against it. */
+
+.calc-pick {
+  display: grid;
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  align-items: center;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--surface-2);
+}
+
+.calc-pick .fld {
+  margin: 0;
+}
+
+.calc-pick select {
+  font-size: 14.5px;
+  font-weight: 500;
+}
+
+.calc-what {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.calc-step {
+  display: flex;
+  gap: 6px;
+}
+
+.calc-step .icon-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* one view at a time — [hidden] does the hiding, this just keeps the
+   spacing right for the one that is left */
+.calc-views > section[data-calc] {
+  margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+  .calc-pick {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .calc-what {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .calc-step {
+    align-self: end;
+  }
+}

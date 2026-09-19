@@ -659,6 +659,85 @@
 
   /* ------------------------------------------------------------ render all */
 
+  /* ------------------------------------------------------------ the picker
+     Eight calculators stacked on one page is a filing cabinet, not a tool.
+     Whichever one you came for was below the fold, and the two-column grid
+     meant the wrong one was always in your eyeline while you typed.
+
+     So: one at a time. The choice lives in the URL fragment, which costs
+     nothing and buys three things — the back button works, a link to
+     "calculators.html#mg" opens on margin, and the existing deep links from
+     the rest of the site keep working unchanged instead of landing on a
+     hidden panel. It is deliberately not saved to settings: a UI preference
+     is not account data, and writing one on every click would fire a
+     storechange across every open screen for nothing. The default is
+     position size, which is the one you want most mornings anyway.
+
+     Arrows next to the dropdown are for the case the dropdown is bad at:
+     you do not know which calculator you want, and you want to look. */
+
+  const VIEWS = ["ps", "rr", "mg", "pv", "sim", "be", "cp", "conv"];
+
+  /* one line each, in the second person, saying what question it answers —
+     a dropdown of eight nouns does not tell a beginner which to pick */
+  const WHAT = {
+    ps: "How many lots, given your balance, your risk rule and where your stop is. Start here — it is the only one that can stop you oversizing.",
+    rr: "Whether the trade is worth taking at all: what you stand to make against what you are risking, and the win rate that would need.",
+    mg: "How much of your balance the broker will lock up to hold the position, and what is left for everything else.",
+    pv: "What one pip is worth in your account currency, so a 20-pip stop stops being an abstraction.",
+    sim: "What a win and a loss on this position would actually do to your balance, in money rather than pips.",
+    be: "Where price has to get to before you are level, once the spread and the fees are counted.",
+    cp: "What one percent a week compounds to, and how long the numbers you have in mind would really take.",
+    conv: "Currency, pips and points, lots and units — the three conversions that come up mid-trade.",
+  };
+
+  let view = null;
+
+  function show(which, push) {
+    const next = VIEWS.indexOf(which) >= 0 ? which : VIEWS[0];
+    view = next;
+
+    $$("[data-calc]").forEach((sec) => {
+      const on = sec.getAttribute("data-calc") === next;
+      sec.hidden = !on;
+      sec.classList.toggle("on", on);
+    });
+
+    const sel = $("#calc-which");
+    if (sel && sel.value !== next) sel.value = next;
+    $("#calc-what").textContent = WHAT[next] || "";
+
+    /* the demo-rates badge is only honest where rates are actually used */
+    const warn = $(".notice.demo");
+    if (warn) warn.hidden = next === "cp";
+
+    if (push && window.location.hash.slice(1) !== next) {
+      /* replaceState, not a new entry per click — the back button should
+         leave the page, not walk you through every calculator you tried */
+      history.replaceState(null, "", "#" + next);
+    }
+
+    renderAll();
+  }
+
+  function step(by) {
+    const i = VIEWS.indexOf(view);
+    show(VIEWS[(i + by + VIEWS.length) % VIEWS.length], true);
+  }
+
+  function firstView() {
+    const hash = window.location.hash.slice(1);
+    return VIEWS.indexOf(hash) >= 0 ? hash : VIEWS[0];
+  }
+
+  function wirePicker() {
+    $("#calc-which").addEventListener("change", (e) => show(e.target.value, true));
+    $("#calc-prev").addEventListener("click", () => step(-1));
+    $("#calc-next").addEventListener("click", () => step(1));
+    window.addEventListener("hashchange", () => show(window.location.hash.slice(1) || firstView(), false));
+    show(firstView(), false);
+  }
+
   function renderAll() {
     renderPositionSize();
     renderRR();
@@ -750,6 +829,8 @@
     };
 
     /* a settings change from another tab, or from the rail, must repaint */
+    wirePicker();
+
     window.addEventListener("storechange", (e) => {
       if (!e.detail || e.detail.kind === "settings" || e.detail.kind === "*") {
         paintAccount();
