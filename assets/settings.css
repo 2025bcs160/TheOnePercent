@@ -303,3 +303,28 @@
   border-color: var(--down);
   color: #fff;
 }
+
+/* ------------------------------------------------------------ small screens
+
+   Two things the shared components get wrong on this screen specifically:
+
+   - the panel head puts its caption beside the title, which at 375px leaves
+     "Risk rules" wrapping into two lines next to its own explanation;
+   - the data stats are short labels with long values ("This device"), so the
+     four-across grid the dashboard wants is four cramped columns here. */
+
+@media (max-width: 560px) {
+  .panel-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  #st-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #st-stats .v {
+    font-size: 16px;
+  }
+}
