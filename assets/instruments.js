@@ -118,6 +118,17 @@ window.Instruments = (() => {
     { symbol: "GC1!", name: "Gold futures", market: "Futures", base: "GC", quote: "USD", price: 2352.7, dp: 1, pip: 0.1, contract: 1, unitValue: 100 },
   ];
 
+  /* Cross rates are DERIVED, never typed. A hand-written EURJPY price
+     disagrees with EUR-via-dollar-via-JPY by about a pip, and then the
+     pip-value card and the currency converter quietly answer differently
+     on the same screen. Any instrument whose base and quote are both in
+     the currency table gets its price from the table, so the two can
+     never drift. */
+  INSTRUMENTS.forEach((i) => {
+    const r = rate(i.base, i.quote);
+    if (r) i.price = Number(r.toFixed(i.dp));
+  });
+
   const bySymbol = {};
   INSTRUMENTS.forEach((i) => {
     bySymbol[i.symbol] = i;
