@@ -26,6 +26,10 @@
   --brand-dark: #2743d6;
   --brand-soft: #eef1ff;
   --on-brand: #ffffff;
+  /* Text that sits on an --up / --down fill. Both directional colours are
+     dark enough in the light theme to carry white. */
+  --on-up: #ffffff;
+  --on-down: #ffffff;
 
   --ink: #0e1420;
   --ink-700: #1b2233;
@@ -59,7 +63,8 @@
   --skel-a: #eef1f6;
   --skel-b: #f7f8fb;
 
-  --shadow-card: 0 1px 2px rgba(14, 20, 32, 0.04), 0 12px 32px rgba(14, 20, 32, 0.06);
+  --shadow-card:
+    0 1px 2px rgba(14, 20, 32, 0.04), 0 12px 32px rgba(14, 20, 32, 0.06);
   --shadow-s: 0 8px 26px rgba(14, 20, 32, 0.08);
   --shadow-m: 0 12px 30px rgba(14, 20, 32, 0.1);
   --shadow-l: 0 16px 38px rgba(14, 20, 32, 0.14);
@@ -81,7 +86,14 @@
   --brand: #5b78ff;
   --brand-dark: #7d92ff;
   --brand-soft: rgba(91, 120, 255, 0.16);
-  --on-brand: #ffffff;
+  /* The dark theme lifts the brand to #5b78ff so it reads against a dark
+     surface, which leaves white text on it at 3.77:1 — under the 4.5:1 this
+     project holds itself to. Dark ink on the same fill measures 5.6:1. */
+  --on-brand: #0b1020;
+  /* The dark theme brightens both directional colours, so they carry dark
+     ink instead — white on #2ed08a or #ff5f6d is around 2-3:1. */
+  --on-up: #04150e;
+  --on-down: #2b0409;
 
   --ink: #e9edf6;
   --ink-700: #cdd5e6;
@@ -198,7 +210,9 @@ button {
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.14s, border-color 0.14s;
+  transition:
+    background 0.14s,
+    border-color 0.14s;
 }
 
 .btn-primary {
@@ -254,7 +268,16 @@ button {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 40;
+  /* Above a page's own sticky header, not level with it. The charts page has a
+     chart toolbar at z-index 40 and it sits later in the document, so at an
+     equal 40 the toolbar won the tie and painted over the nav's own overlays.
+     The search results panel and the Markets dropdown opened correctly, had
+     layout and had rows in them, and were buried behind the toolbar — which
+     read, from the outside, as a search that returns nothing.
+
+     50 leaves the skip link (60), the chart toolbar's own dropdowns (60) and
+     every dialog (200) above the nav, which is where they belong. */
+  z-index: 50;
   background: var(--nav-bg);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
@@ -314,7 +337,9 @@ button {
   color: var(--ink-700);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.14s, color 0.14s;
+  transition:
+    background 0.14s,
+    color 0.14s;
 }
 
 .nav-links > a:hover,
@@ -353,7 +378,10 @@ button {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-4px);
-  transition: opacity 0.14s, transform 0.14s, visibility 0.14s;
+  transition:
+    opacity 0.14s,
+    transform 0.14s,
+    visibility 0.14s;
 }
 
 .dd-panel.open {
@@ -407,8 +435,11 @@ button {
 
 .nav-search {
   position: relative;
-  flex: 1;
-  min-width: 180px;
+  /* min-width beat flex-shrink here, so between roughly 1000 and 1060px the
+     search box refused to give up its 180px and pushed Log in / Sign up off
+     the right edge of every page. It shrinks now and the buttons stay put. */
+  flex: 1 1 180px;
+  min-width: 0;
   max-width: 340px;
   margin-left: auto;
 }
@@ -422,7 +453,9 @@ button {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-s);
-  transition: border-color 0.14s, background 0.14s;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
 }
 
 .search-field:focus-within {
@@ -715,7 +748,9 @@ button {
   border-radius: 9px;
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.14s, color 0.14s;
+  transition:
+    background 0.14s,
+    color 0.14s;
 }
 
 .rail button:hover,
@@ -789,7 +824,10 @@ button {
   opacity: 0;
   visibility: hidden;
   transform: translateX(6px);
-  transition: opacity 0.16s, transform 0.16s, visibility 0.16s;
+  transition:
+    opacity 0.16s,
+    transform 0.16s,
+    visibility 0.16s;
 }
 
 .rail-panel.open {
@@ -983,7 +1021,12 @@ td.num {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--skel-a) 25%, var(--skel-b) 37%, var(--skel-a) 63%);
+  background: linear-gradient(
+    90deg,
+    var(--skel-a) 25%,
+    var(--skel-b) 37%,
+    var(--skel-a) 63%
+  );
   background-size: 400% 100%;
   border-radius: 5px;
   animation: shimmer 1.3s infinite linear;

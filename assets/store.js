@@ -96,6 +96,32 @@ window.Store = (() => {
     }
   }
 
+  /* Set when a write had to drop chart images to fit. The UI reads it to
+     say so, because a screenshot vanishing without a word is worse than
+     never having been offered. */
+  let shedImages = false;
+
+  /* Chart screenshots are the only thing in here big enough to fill the
+     quota — roughly 50KB of base64 each, against a 5MB budget. When a write
+     fails, the trades are worth more than the pictures, so the pictures go
+     first and the write is retried. Losing an entry silently is not an
+     option: before this, a quota error was caught, the value stayed in
+     memory only, and the trade disappeared on the next reload. */
+  function withoutImages(value) {
+    if (!Array.isArray(value)) return null;
+    let dropped = false;
+    const lean = value.map((row) => {
+      if (row && typeof row === "object" && row.shot) {
+        dropped = true;
+        const copy = Object.assign({}, row);
+        delete copy.shot;
+        return copy;
+      }
+      return row;
+    });
+    return dropped ? lean : null;
+  }
+
   function writeKey(key, value) {
     memory.set(key, value);
     const s = webStorage();
@@ -105,7 +131,19 @@ window.Store = (() => {
     }
     try {
       s.setItem(key, JSON.stringify(value));
+      return;
     } catch (e) {
+      const lean = withoutImages(value);
+      if (lean) {
+        try {
+          s.setItem(key, JSON.stringify(lean));
+          memory.set(key, lean);
+          shedImages = true;
+          return;
+        } catch (e2) {
+          /* fall through — even without images it does not fit */
+        }
+      }
       storageBlocked = true;
     }
   }
@@ -784,6 +822,8 @@ window.Store = (() => {
   const api = {
     driver: () => driver.name,
     storageBlocked: () => storageBlocked,
+    /* True once a write had to drop chart screenshots to fit the quota. */
+    imagesShed: () => shedImages,
     vocab: { EMOTIONS, SETUPS, SESSIONS, MARKETS },
 
     /* swap in a backend later without touching a screen */
