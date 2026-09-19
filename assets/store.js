@@ -479,7 +479,30 @@ window.Store = (() => {
         "and the journal is the only place it is visible."
     );
 
-    /* 6 — the behavioural cuts: same machinery, different key */
+    /* 6 — the checklist, priced. This is the pair to the pre-trade gate on
+       the journal: the gate cannot block a trade, so the only thing that
+       makes it worth obeying is being able to show later what ignoring it
+       cost. Both cuts need trades on each side to say anything at all, which
+       versusRest already enforces. */
+    const offPlan = rows.filter((x) => (x.t.unmet || []).length);
+    pattern(
+      "offPlan",
+      offPlan.length + " trades taken with your own checklist unmet",
+      offPlan,
+      "You logged these knowing something was unmet — the size, the R:R, the reason, or the stop. " +
+        "The checklist cannot stop you. This is what walking past it has been worth."
+    );
+
+    const noPlan = rows.filter((x) => !String(x.t.plan || "").trim());
+    pattern(
+      "noPlan",
+      noPlan.length + " trades with no reason written",
+      noPlan,
+      "Nothing was written down before entry on these. A trade you cannot explain afterwards is a trade you " +
+        "cannot repeat on purpose or stop taking on purpose."
+    );
+
+    /* 7 — the behavioural cuts: same machinery, different key */
     const cuts = [
       ["session", (t) => t.session, "session"],
       ["emotion", (t) => t.emotion, "state of mind"],

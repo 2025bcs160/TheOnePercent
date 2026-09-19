@@ -213,6 +213,36 @@
         <div id="shot-preview" class="shot-preview" hidden></div>
       </div>
 
+      <!-- ------------------------------------------------ the gate
+           Everything above this line is a record. This is the only part of
+           the app that can change an outcome, because it is the only part
+           that runs before the money is committed. It is deliberately split:
+           the app checks what the app can know, and asks the trader only the
+           two things it cannot. -->
+      <div class="fs pretrade" id="pre-trade">
+        <h3 id="pt-title">Before you enter</h3>
+        <p class="hint" id="pt-intro">Nothing here blocks you. It just makes taking the trade anyway a decision you made on purpose.</p>
+
+        <div class="pt-split">
+          <div class="pt-col" id="pt-auto">
+            <h4>What the app already knows</h4>
+            <ul class="pt-checks" id="pt-checks"></ul>
+          </div>
+
+          <div class="pt-col">
+            <h4>What only you can answer</h4>
+            <label class="fld">
+              <span>Why this trade <small>one line, written before entry</small></span>
+              <textarea name="plan" rows="2" placeholder="Bought the retest of the London high because the sweep failed and sellers gave up."></textarea>
+            </label>
+            <label class="fld chk"><input type="checkbox" name="chkStop"><span>My stop is where the idea is wrong, not at the loss I can stomach</span></label>
+            <label class="fld chk"><input type="checkbox" name="chkNotRevenge"><span id="pt-revenge">I am taking this because it is my setup, not because of the last trade</span></label>
+          </div>
+        </div>
+
+        <div class="pt-verdict" id="pt-verdict" aria-live="polite"></div>
+      </div>
+
       <!-- live arithmetic, so the numbers are visible before saving -->
       <div class="calc" id="calc" aria-live="polite"></div>
 

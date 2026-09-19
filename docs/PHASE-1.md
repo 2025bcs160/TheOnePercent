@@ -135,7 +135,7 @@ one persistent filter — date range and account — that every widget reads.
 
 ## 2. Build order
 
-Steps 1–7 are complete. Step 8 (charts) is next.
+Steps 1–7 are complete, plus the pre-trade checklist below. Step 8 (charts) is next.
 
 | # | Step | State |
 | --- | --- | --- |
@@ -313,3 +313,62 @@ docs/PHASE-1.md         this file
 Conventions: every colour is a token, every page sets `data-page` and
 `data-depth` on `<body>` and includes `shell.js` last, and no screen touches
 browser storage directly — it goes through `Store`.
+
+## 3e. Added beyond the original plan: the pre-trade checklist
+
+Every leak the dashboard can name — oversized, stop overrun, revenge entry, one
+trade too many — was a decision made in the minute before the entry. The
+dashboard reports them after the money is gone. The checklist runs while it can
+still change the outcome, and it is the only screen in the app that can.
+
+It lives as the last fieldset in the trade form, titled **Before you enter**, and
+is split deliberately.
+
+**What the app already knows** is computed and re-checked on every keystroke, so
+there is nothing to tick:
+
+| Check | Passes when |
+| --- | --- |
+| A stop is set | `stop` is a number |
+| The stop is on the losing side | long stop below entry, short stop above (only shown once a stop exists) |
+| Inside your risk rule | `riskPct` ≤ `settings.riskPct` |
+| Meets your minimum R:R | `plannedRR` ≥ `settings.minRR`; no target counts as unmet, because unknown reward is not the same as good reward |
+| The setup is named | the setup select is no longer on its placeholder |
+| The session is named | same |
+| No guardrail breached today | `Store.guardrails()` reports no breach, or guardrails are muted |
+
+**What only you can answer** is three things and no more, because a longer list
+is a list people tick without reading:
+
+- a one-line written reason, saved as `t.plan`
+- "my stop is where the idea is wrong, not at the loss I can stomach"
+- "this is my setup, not the last trade" — reworded to name the loss when the
+  last closed trade lost
+
+The verdict stays quiet until there is an entry and a size to judge; being told
+eight things are wrong before typing a character is nagging, not coaching.
+
+**It does not block saving.** A checklist that refuses gets lied to, and nothing
+here can stop an order at the broker anyway. Overriding costs a sentence
+instead: the submit button becomes **Log it anyway**, a confirm names exactly
+what is unmet, and the trade is saved carrying `t.unmet` — which the detail
+drawer shows as *Taken off plan* and the CSV exports as an `offPlan` column.
+
+Two things follow from that record, and they are the reason the gate is worth
+obeying at all:
+
+- `Store.leaks()` gained two cuts — trades taken with the checklist unmet, and
+  trades with no reason written — both priced against the rest of the journal by
+  the existing `versusRest()` machinery, never against zero. Identical subsets
+  still dedupe, so if every off-plan trade is also an unplanned one you see it
+  once.
+- Editing a trade never rewrites its pre-trade record. A journal that lets you
+  tidy up history is worth nothing.
+
+On an existing trade the section relabels to **The plan behind it**: the checks
+and the verdict come off, since grading a trade you already took teaches
+nothing, but the reason stays editable because writing it down late still beats
+leaving it blank.
+
+`discipline()` weights were deliberately **not** changed. Folding the checklist
+into the score would silently rewrite every past trade's grade.

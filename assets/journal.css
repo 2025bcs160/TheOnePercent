@@ -714,3 +714,142 @@
     transform: translateY(20px);
   }
 }
+
+/* ------------------------------------------------------------ the gate
+   Styled as the one part of the form that is not a record. It carries a
+   brand edge so it reads as an interruption rather than another fieldset,
+   and the two columns are visibly different jobs: a list the app filled in,
+   and questions waiting on you. */
+
+.fs.pretrade {
+  border-left: 3px solid var(--brand);
+  padding-left: 16px;
+}
+
+.pt-split {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px 24px;
+  margin-top: 12px;
+}
+
+.pt-col h4 {
+  margin: 0 0 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.pt-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.pt-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.pt-checks b {
+  font-weight: 500;
+}
+
+.pt-checks li.ok b {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.pt-checks small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.pt-mark {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 15px;
+  text-align: center;
+  color: var(--faint);
+}
+
+.pt-checks li.ok .pt-mark {
+  border-color: var(--up);
+  color: var(--up);
+}
+
+.pt-checks li.no .pt-mark {
+  border-color: var(--down);
+  color: var(--down);
+  font-weight: 700;
+}
+
+.pt-col .fld + .fld {
+  margin-top: 10px;
+}
+
+.pt-col .fld.chk span {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.pt-verdict {
+  margin-top: 16px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  background: var(--surface-2);
+}
+
+.pt-verdict b {
+  font-size: 13.5px;
+}
+
+.pt-verdict span {
+  display: block;
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.pt-verdict.ready {
+  border-color: var(--up);
+}
+
+.pt-verdict.ready b {
+  color: var(--up);
+}
+
+.pt-verdict.not {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+}
+
+.pt-verdict.not b {
+  color: var(--warn-ink);
+}
+
+.dr-sec.off-plan h3 {
+  color: var(--down);
+}
+
+.pt-verdict.wait b {
+  color: var(--muted);
+}

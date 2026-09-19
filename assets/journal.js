@@ -375,6 +375,18 @@
           : `<div class="dr-sec"><h3>Exits</h3><p>Still open — no exit legs recorded.</p></div>`
       }
 
+      ${
+        t.plan
+          ? `<div class="dr-sec"><h3>The plan</h3><p>${esc(t.plan)}</p></div>`
+          : `<div class="dr-sec"><h3>The plan</h3><p class="muted-note">No reason was written before this one.</p></div>`
+      }
+      ${
+        (t.unmet || []).length
+          ? `<div class="dr-sec off-plan"><h3>Taken off plan</h3><p>${esc(
+              (t.unmet || []).map((k) => HUMAN_LABEL[k] || (CHECK_LABEL[k] || k).toLowerCase()).join(", ")
+            )} — unmet when this was logged.</p></div>`
+          : ""
+      }
       ${t.review ? `<div class="dr-sec"><h3>Review</h3><p>${esc(t.review)}</p></div>` : ""}
       ${
         (t.tags || []).length
@@ -438,8 +450,13 @@
     return div;
   }
 
-  function fillSelect(sel, list) {
-    sel.innerHTML = list.map((o) => `<option>${esc(o)}</option>`).join("");
+  function fillSelect(sel, list, placeholder) {
+    /* A select that defaults to the first setup in the list is a select that
+       records "Breakout" for every trade a hurried trader ever logs. With a
+       placeholder, "not chosen" becomes a state the checklist can see. */
+    sel.innerHTML =
+      (placeholder ? `<option value="">${esc(placeholder)}</option>` : "") +
+      list.map((o) => `<option>${esc(o)}</option>`).join("");
   }
 
   let shotData = null;
@@ -478,9 +495,191 @@
         .filter(Boolean),
       stopHonoured: fd.get("stopHonoured") === "on",
       review: String(fd.get("review") || "").trim(),
+      /* the pre-trade record: the reason, and the two things the app cannot
+         verify for itself. Kept on the trade so the journal can later show
+         what planned trades did against unplanned ones. */
+      plan: String(fd.get("plan") || "").trim(),
+      checks: {
+        stopInvalidates: fd.get("chkStop") === "on",
+        notRevenge: fd.get("chkNotRevenge") === "on",
+      },
       exits,
       shot: shotData,
     };
+  }
+
+  /* ------------------------------------------------------------ the gate
+     Every leak the dashboard can name — oversized, stop moved, revenge
+     entry, one trade too many — was a decision made in the minute before
+     the entry. The dashboard reports them once the money is gone. This runs
+     while it can still matter, and it is the only screen in the app that can.
+
+     Two rules shaped it.
+
+     First: never ask a human what the machine already knows. Risk percentage,
+     R:R against the minimum, whether the stop is on the losing side, whether
+     a guardrail is already breached — the app has all of that and asking
+     would just train the user to tick without reading. So the checks split
+     into what the app verifies and the two things only the trader can answer.
+
+     Second: it does not block saving. A checklist that refuses gets lied to,
+     and this app cannot stop an order at the broker anyway. What it can do is
+     make overriding cost a sentence: the button changes, the confirm names
+     what is unmet, and the trade is saved carrying that list — so a month
+     later the journal can price what ignoring it was worth.
+  */
+
+  function guardState() {
+    if (!Store.guardrails) return null;
+    return Store.guardrails(Store.trades.list(), settings(), new Date());
+  }
+
+  /* Checks the app can make for itself. Each returns
+     {ok, kind, text} — text is written for the failing case, since that is
+     the one anybody reads. */
+  function autoChecks(t, c) {
+    const s = settings();
+    const out = [];
+    const ok = (kind, good, text) => out.push({ kind, ok: good, text });
+
+    ok("stop", Number.isFinite(t.stop), "No stop, so there is no risk, no R and nothing to compare this trade to later.");
+
+    /* only worth asking once there is a stop — otherwise it ticks green for
+       a trade that has no stop at all, which is the opposite of the truth */
+    if (Number.isFinite(t.stop) && Number.isFinite(t.entry)) {
+      const wrongSide =
+        (t.side === "Long" && t.stop > t.entry) || (t.side === "Short" && t.stop < t.entry);
+      ok("stopSide", !wrongSide, "Your stop is on the profitable side of the entry for a " + String(t.side || "long").toLowerCase() + ".");
+    }
+
+    const cap = s.riskPct;
+    ok(
+      "risk",
+      c.riskPct !== null && c.riskPct <= cap + 0.001,
+      c.riskPct === null
+        ? "Risk cannot be worked out yet — fill in the stop and the size."
+        : "This risks " + pct(c.riskPct, 2) + " against your " + cap + "% rule. Size is the one thing you control completely before the market touches it."
+    );
+
+    ok(
+      "rr",
+      c.plannedRR !== null && c.plannedRR >= s.minRR,
+      c.plannedRR === null
+        ? "No target, so the reward is unknown and the trade cannot be judged against your " + s.minRR + ":1 minimum."
+        : "Planned " + c.plannedRR.toFixed(2) + ":1 is below the " + s.minRR + ":1 you set for yourself."
+    );
+
+    ok("setup", !!t.setup, "No setup chosen. An unnamed setup cannot be reviewed, repeated or dropped.");
+    ok("session", !!t.session, "No session chosen — and session is one of the strongest patterns in most journals.");
+
+    const g = guardState();
+    if (g && !g.muted && g.breaches.length) {
+      out.push({
+        kind: "guardrails",
+        ok: false,
+        text: g.breaches.map((b) => b.text).join(" "),
+      });
+    } else {
+      out.push({ kind: "guardrails", ok: true, text: "A guardrail is already breached today." });
+    }
+
+    return out;
+  }
+
+  const CHECK_LABEL = {
+    stop: "A stop is set",
+    stopSide: "The stop is on the losing side",
+    risk: "Inside your risk rule",
+    rr: "Meets your minimum R:R",
+    setup: "The setup is named",
+    session: "The session is named",
+    guardrails: "No guardrail breached today",
+  };
+
+  const HUMAN_LABEL = {
+    plan: "a written reason",
+    stopInvalidates: "the stop is where the idea is wrong",
+    notRevenge: "this is not about the last trade",
+  };
+
+  /* what is unmet, as kinds — used by the verdict, the confirm and the
+     record saved on the trade */
+  function unmetFor(t, c) {
+    const out = autoChecks(t, c).filter((x) => !x.ok).map((x) => x.kind);
+    if (!t.plan) out.push("plan");
+    if (!t.checks.stopInvalidates) out.push("stopInvalidates");
+    if (!t.checks.notRevenge) out.push("notRevenge");
+    return out;
+  }
+
+  function renderChecklist(t, c) {
+    const box = $("#pre-trade");
+    if (!box || box.hidden) return;
+
+    /* on an existing trade there is no gate, so the button must not carry the
+       override wording from whatever was last open in the drawer */
+    if ($("#pt-auto").hidden) {
+      const btnE = $("#trade-form").querySelector("button[type='submit']");
+      if (btnE) btnE.textContent = "Save trade";
+      return;
+    }
+
+    const checks = autoChecks(t, c);
+    $("#pt-checks").innerHTML = checks
+      .map(
+        (x) =>
+          '<li class="' + (x.ok ? "ok" : "no") + '">' +
+          '<span class="pt-mark" aria-hidden="true">' + (x.ok ? "✓" : "!") + "</span>" +
+          "<span><b>" + esc(CHECK_LABEL[x.kind] || x.kind) + "</b>" +
+          (x.ok ? "" : "<small>" + esc(x.text) + "</small>") +
+          "</span></li>"
+      )
+      .join("");
+
+    /* the revenge question is sharper when the app can see the last trade
+       was a loss, so it asks the sharper version then */
+    const last = Store.trades
+      .list()
+      .map((x) => ({ t: x, c: Store.compute(x) }))
+      .filter((x) => !x.c.open)
+      .sort((a, b) => String(b.t.date || "").localeCompare(String(a.t.date || "")))[0];
+    const rev = $("#pt-revenge");
+    if (rev)
+      rev.textContent =
+        last && last.c.netPL < 0
+          ? "Your last closed trade lost. This one is my setup, not the one that wins it back."
+          : "I am taking this because it is my setup, not because of the last trade";
+
+    /* An untouched form has nothing to judge, and opening the drawer to be
+       told eight things are wrong before typing a character is nagging, not
+       coaching. The verdict waits until there is a trade to check. */
+    const started = Number.isFinite(t.entry) && Number.isFinite(t.size) && t.size > 0;
+
+    const unmet = unmetFor(t, c);
+    const ready = unmet.length === 0;
+    const v = $("#pt-verdict");
+
+    if (!started) {
+      v.className = "pt-verdict wait";
+      v.innerHTML = "<b>Waiting on the numbers</b><span>Fill in the entry, the stop and the size. Everything above checks itself as you type.</span>";
+      const btn0 = $("#trade-form").querySelector("button[type='submit']");
+      if (btn0) btn0.textContent = "Save trade";
+      return;
+    }
+
+    v.className = "pt-verdict " + (ready ? "ready" : "not");
+    v.innerHTML = ready
+      ? "<b>Ready.</b><span>Every check you set for yourself is met. That is the trade you said you would take.</span>"
+      : "<b>" + unmet.length + (unmet.length === 1 ? " thing unmet" : " things unmet") + "</b><span>" +
+        esc(
+          unmet
+            .map((k) => HUMAN_LABEL[k] || (CHECK_LABEL[k] || k).toLowerCase())
+            .join(", ")
+        ) +
+        ". You can still log it — it will be recorded as taken off plan.</span>";
+
+    const save = $("#trade-form").querySelector("button[type='submit']");
+    if (save) save.textContent = ready ? "Save trade" : "Log it anyway";
   }
 
   function liveCalc() {
@@ -496,6 +695,8 @@
       <div><div class="k">Net P/L</div><div class="v ${c.open ? "" : dir(c.netPL)}">${c.open ? "open" : money(c.netPL, true)}</div></div>
       <div><div class="k">R multiple</div><div class="v ${c.r === null ? "" : dir(c.r)}">${c.open ? "—" : rfmt(c.r)}</div></div>
       <div><div class="k">Discipline</div><div class="v">${d}/100</div></div>`;
+
+    renderChecklist(t, c);
   }
 
   /* `prefill` is a partial trade handed over from another screen — today
@@ -513,6 +714,19 @@
     const t = id ? Store.trades.find(id) : null;
     $("#fm-title").textContent = t ? "Edit trade" : "Log a trade";
     $("#del-trade").hidden = !t;
+
+    /* On an existing trade the gate is history, not a gate. The auto-checks
+       and the verdict come off — grading a trade you already took teaches
+       nothing — but the reason stays editable, because writing down after the
+       fact why you took it is still worth more than leaving it blank. */
+    const fresh = !t;
+    $("#pre-trade").hidden = false;
+    $("#pt-auto").hidden = !fresh;
+    $("#pt-verdict").hidden = !fresh;
+    $("#pt-title").textContent = fresh ? "Before you enter" : "The plan behind it";
+    $("#pt-intro").textContent = fresh
+      ? "Nothing here blocks you. It just makes taking the trade anyway a decision you made on purpose."
+      : "This trade is already taken, so there is nothing left to check. The reason is still worth writing down.";
 
     if (t) {
       f.elements.tradeId.value = t.id;
@@ -532,6 +746,9 @@
       f.tags.value = (t.tags || []).join(", ");
       f.stopHonoured.checked = t.stopHonoured !== false;
       f.review.value = t.review || "";
+      f.plan.value = t.plan || "";
+      f.chkStop.checked = !!(t.checks && t.checks.stopInvalidates);
+      f.chkNotRevenge.checked = !!(t.checks && t.checks.notRevenge);
       (t.exits || []).forEach((e) => $("#exits").appendChild(exitRow(e)));
       if (t.shot) {
         shotData = t.shot;
@@ -633,6 +850,31 @@
     if (wrongSide && !confirm("Your stop is on the profitable side of the entry for a " + t.side.toLowerCase() + ". Save anyway?"))
       return;
 
+    /* The override. It is not a blocker — a checklist that refuses gets lied
+       to, and nothing here can stop an order at the broker. It costs a
+       sentence instead, and the trade carries what was unmet so the journal
+       can later show what taking trades off plan was actually worth. */
+    const fresh = !t.id;
+    if (fresh) {
+      const unmet = unmetFor(t, Store.compute(t));
+      if (unmet.length) {
+        const names = unmet.map((k) => HUMAN_LABEL[k] || (CHECK_LABEL[k] || k).toLowerCase());
+        if (
+          !confirm(
+            "Taking this off plan. Unmet: " + names.join(", ") + ".\n\n" +
+              "It will be logged and marked as taken off plan. Continue?"
+          )
+        )
+          return;
+      }
+      t.unmet = unmet;
+    } else {
+      const prev = Store.trades.find(t.id);
+      /* editing never rewrites the pre-trade record — that would let a
+         trader tidy up history, which is the one thing a journal must not do */
+      if (prev && prev.unmet) t.unmet = prev.unmet;
+    }
+
     if (!t.id) delete t.id;
     Store.trades.save(t);
     close($("#form-drawer"));
@@ -643,7 +885,7 @@
 
   const CSV_COLS = ["date", "symbol", "market", "side", "setup", "session", "entry", "stop",
     "target", "size", "contractValue", "fees", "exitPrice", "exitSize", "emotion", "tags",
-    "stopHonoured", "review"];
+    "stopHonoured", "plan", "offPlan", "review"];
 
   function exportCsv() {
     const rows = rowsFor().map(({ t, c, d }) => ({
@@ -653,6 +895,7 @@
       exitPrice: c.avgExit === null ? "" : c.avgExit, exitSize: c.closedSize,
       emotion: t.emotion, tags: (t.tags || []).join("|"),
       stopHonoured: t.stopHonoured !== false, review: t.review,
+      plan: t.plan || "", offPlan: (t.unmet || []).join("|"),
       netPL: c.netPL, r: c.r, riskPct: c.riskPct, discipline: d,
     }));
     if (!rows.length) return toast("Nothing to export with these filters");
@@ -953,8 +1196,8 @@
 
   function init() {
     fillSelect($("#fm-market"), V.MARKETS);
-    fillSelect($("#fm-setup"), V.SETUPS);
-    fillSelect($("#fm-session"), V.SESSIONS);
+    fillSelect($("#fm-setup"), V.SETUPS, "Choose the setup");
+    fillSelect($("#fm-session"), V.SESSIONS, "Choose the session");
     fillSelect($("#fm-emotion"), V.EMOTIONS);
     buildChips();
 
@@ -1005,6 +1248,9 @@
     };
     $("#trade-form").addEventListener("submit", saveForm);
     $("#trade-form").addEventListener("input", liveCalc);
+    /* selects and checkboxes are the two controls where a browser may give
+       you change without input, and both now feed the checklist */
+    $("#trade-form").addEventListener("change", liveCalc);
     $("#del-trade").onclick = () => {
       const id = $("#trade-form").elements.tradeId.value;
       if (!id || !confirm("Delete this trade? It will not be recoverable.")) return;
