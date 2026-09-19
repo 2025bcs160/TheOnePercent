@@ -34,7 +34,7 @@ module, `assets/store.js`, which exposes a driver interface:
 ```
 Store.trades.list()  .save(t)  .remove(id)
 Store.profile.get()  .patch(p)
-Store.settings.get() .patch(p)
+Store.settings.get() .patch(p)  .clear()
 ```
 
 Today the driver is `local` (browser storage, with an in-memory fallback for
@@ -135,7 +135,7 @@ one persistent filter — date range and account — that every widget reads.
 
 ## 2. Build order
 
-Steps 1–5 are complete. Step 6 is next.
+Steps 1–5 and 7 are complete. Step 6 is next.
 
 | # | Step | State |
 | --- | --- | --- |
@@ -145,7 +145,7 @@ Steps 1–5 are complete. Step 6 is next.
 | 4 | Journal — log, filters, detail drawer, import | done |
 | 5 | Calculators and converters | done |
 | 6 | **Dashboard widgets over real journal data** | next |
-| 7 | Settings | next |
+| 7 | Settings — account, risk rules, guardrails, profile, data | done |
 | 8 | Charts and Market Watch (Lightweight Charts) | 1B |
 | 9 | Market context — news, calendar, sentiment | 1B |
 | 10 | Learn — lesson paths and resource library | 1B |
@@ -180,6 +180,35 @@ leaderboard shows handles only with the formula printed on the page.
 
 ---
 
+## 3b. Added beyond the original plan: guardrails
+
+The plan graded trades **after** they were closed. A discipline score of 62 tells
+a trader what they already know — the money is gone. The rule that would have
+saved the money has to be checked *before* the next entry, so `Store.guardrails()`
+reads the journal for today and answers a different question: should there be
+another trade at all?
+
+Three rails, all of them the user's own numbers, all of them set in Settings:
+
+| Rail | Setting | Default |
+| --- | --- | --- |
+| Daily loss stop | `maxDailyLossPct` | 3% of balance |
+| Trades per day | `maxTradesPerDay` | 3 |
+| Cool-off after losses in a row | `coolOffAfterLosses` | 3 |
+
+Any rail set to `0` is switched off. "Today" is the local calendar day, not UTC —
+a Kampala trader's day does not end at 3am. When a rail is broken the journal and
+the dashboard show a banner naming the rule and what it is protecting; nothing is
+ever *blocked*, because a tool that locks a trader out gets closed and the trade
+goes in the broker anyway, unlogged. The point is that the trade is taken
+knowingly. With warnings switched off the breach is still computed and flagged
+`muted`, so Settings can tell the user the rule is broken and nothing is saying so.
+
+`minRR` moved out of the code and into Settings at the same time: the discipline
+score used to award its planned-R:R marks against a hard-coded 1.5.
+
+---
+
 ## 4. Out of scope, unchanged
 
 Broker connections, live orders, copy trading, backtesting, signal selling,
@@ -200,6 +229,7 @@ pages/
   dashboard.html        feedback surface
   journal.html          trade log
   calculators.html      sizing, risk, margin, P&L, converters
+  settings.html         account, risk rules, guardrails, profile, data
 assets/
   theme.js              sets data-theme before first paint (no flash)
   shell.css  shell.js   tokens, chrome, top nav, right rail, palette

@@ -41,6 +41,7 @@ window.Shell = (() => {
     journal: root + "pages/journal.html",
     charts: root + "pages/charts.html",
     calculators: root + "pages/calculators.html",
+    settings: root + "pages/settings.html",
     learn: root + "pages/learn.html",
     markets: root + "index.html#summary",
   };
@@ -204,7 +205,7 @@ window.Shell = (() => {
              }</small></div>
              <a href="${P.dashboard}">Dashboard</a>
              <a href="${P.onboarding}">Trading preferences</a>
-             <a href="#">Account settings</a>
+             <a href="${P.settings}">Account settings</a>
              <a href="#" data-shell-logout>Log out</a>
            </div>
          </div>`
@@ -257,7 +258,8 @@ window.Shell = (() => {
     const more = MORE_LINKS.map((l) => `<a class="sheet-link" href="#">${l}</a>`).join("");
 
     const cta = authed
-      ? `<a class="btn btn-quiet" href="${P.onboarding}">Trading preferences</a>
+      ? `<a class="btn btn-quiet" href="${P.settings}">Settings</a>
+         <a class="btn btn-quiet" href="${P.onboarding}">Trading preferences</a>
          <a class="btn btn-quiet" href="#" data-shell-logout>Log out</a>`
       : `<a class="btn btn-primary" href="${P.signup}">Start free →</a>
          <a class="btn btn-quiet" href="${P.login}">Log in</a>`;
@@ -413,6 +415,7 @@ window.Shell = (() => {
              (me && me.experience) || "not set yet"
            }</small></span></div>
            <div class="sheet-cta" style="margin-top:12px">
+             <a class="btn btn-quiet" href="${P.settings}">Settings</a>
              <a class="btn btn-quiet" href="${P.onboarding}">Edit preferences</a>
              <a class="btn btn-quiet" href="#" data-shell-logout>Log out</a>
            </div>`

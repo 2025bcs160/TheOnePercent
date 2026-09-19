@@ -887,6 +887,7 @@
     renderTable(rows);
     renderCalendar(rows);
     renderInsights(rows);
+    renderGuardrails();
 
     const dirty = state.q || state.result !== "all" || state.market !== "all" || state.emotion !== "all";
     $("#f-clear").hidden = !dirty;
@@ -923,6 +924,32 @@
   }
 
   /* ------------------------------------------------------------ init */
+
+
+  /* ------------------------------------------------------------ guardrails
+     The other half of discipline: not "how did that trade score" but
+     "should there be another one today". Store.guardrails() does the
+     thinking; this only draws it, and it draws nothing when nothing is
+     broken, because a banner that is always there is wallpaper. */
+  function renderGuardrails() {
+    const box = document.getElementById("guard-warn");
+    if (!box || !Store.guardrails) return;
+
+    const g = Store.guardrails(Store.trades.list(), Store.settings.get());
+    if (!g.blocked) {
+      box.hidden = true;
+      box.innerHTML = "";
+      return;
+    }
+
+    box.innerHTML =
+      "<span><b>" +
+      (g.breaches.length === 1 ? "You have hit one of your own limits" : "You have hit " + g.breaches.length + " of your own limits") +
+      "</b><ul>" +
+      g.breaches.map((b) => "<li>" + esc(b.text) + "</li>").join("") +
+      '</ul></span><a class="btn btn-quiet" href="settings.html#guardrails">Adjust the rules</a>';
+    box.hidden = false;
+  }
 
   function init() {
     fillSelect($("#fm-market"), V.MARKETS);

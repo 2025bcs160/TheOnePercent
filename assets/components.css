@@ -586,3 +586,34 @@ th[data-sort].on.asc::after {
   font-size: 13px;
   box-shadow: var(--shadow-m);
 }
+
+/* ------------------------------------------------------------ guardrails
+   The forward-looking warning, shown on the journal and the dashboard by
+   Store.guardrails(). It is a notice, not a modal: it never blocks the
+   next trade, it just refuses to let the user take it unknowingly. */
+
+.notice.guard {
+  border-color: var(--warn-line);
+  background: var(--warn-soft);
+  align-items: flex-start;
+}
+
+.notice.guard b {
+  color: var(--warn-ink);
+}
+
+.notice.guard ul {
+  margin: 6px 0 0;
+  padding-left: 17px;
+  color: var(--warn-ink);
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+.notice.guard ul li + li {
+  margin-top: 3px;
+}
+
+.notice.guard .btn {
+  flex: 0 0 auto;
+}

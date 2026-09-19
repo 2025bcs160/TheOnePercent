@@ -40,6 +40,16 @@ window.Store = (() => {
     currency: "USD",
     riskPct: 1,
     accountName: "Demo account",
+
+    /* Guardrails. Not in the original roadmap, added because a risk rule
+       that is only checked after the fact is a report, not a rule. These
+       are the limits the journal and the dashboard warn against BEFORE
+       the next trade. Zero or false disables an individual rail. */
+    minRR: 1.5,
+    guardrailsOn: true,
+    maxDailyLossPct: 3,
+    maxTradesPerDay: 3,
+    coolOffAfterLosses: 3,
     timezone: (() => {
       try {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -254,8 +264,10 @@ window.Store = (() => {
     /* 15 — was the stop honoured (self-reported, and asked plainly) */
     if (trade.stopHonoured !== false) score += 15;
 
-    /* 10 — was the trade planned to pay more than it risked */
-    if (c.plannedRR !== null && c.plannedRR >= 1.5) score += 10;
+    /* 10 — was the trade planned to pay more than it risked. The bar is
+       the user's own minimum R:R, not a number baked in here. */
+    const minRR = num((settings || {}).minRR) || DEFAULT_SETTINGS.minRR;
+    if (c.plannedRR !== null && c.plannedRR >= minRR) score += 10;
     else if (c.plannedRR !== null && c.plannedRR >= 1) score += 5;
 
     /* 10 — was it reviewed, and was the emotion honest */
@@ -329,6 +341,83 @@ window.Store = (() => {
   /* Consecutive days with at least one logged trade, counting back from
      today. The streak is the cheapest retention mechanic that also
      happens to make the user better. */
+  /* ---------------------------------------------------------- guardrails
+     The forward-looking half of discipline. `discipline()` grades a trade
+     that has already happened; this looks at today and says whether the
+     next one should be taken at all.
+
+     Everything is derived, nothing is stored: the rails are settings, the
+     evidence is the trade log, so there is no state to get out of sync.
+     Returns breaches even when guardrailsOn is false, with `muted: true`,
+     because a user who switched them off should still be able to see what
+     they switched off. */
+  /* local calendar day, not UTC — a trade at 1am in Kampala belongs to
+     that day, and toISOString would file it under the one before */
+  function dayKey(d) {
+    const p = (n) => String(n).padStart(2, "0");
+    return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+  }
+
+  function guardrails(trades, settings, now) {
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    const today = dayKey(now || new Date());
+    const list = (trades || []).slice();
+
+    const todays = list.filter((t) => String(t.date || "").slice(0, 10) === today);
+    const closedToday = todays.filter((t) => !compute(t).open);
+
+    const netToday = closedToday.reduce((a, t) => a + compute(t).netPL, 0);
+    const balance = num(s.balance) || DEFAULT_SETTINGS.balance;
+    const lossPct = netToday < 0 ? (Math.abs(netToday) / balance) * 100 : 0;
+
+    /* consecutive losses, newest first, across days — a losing streak does
+       not politely reset at midnight */
+    const closed = list
+      .filter((t) => !compute(t).open)
+      .sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+    let run = 0;
+    for (const t of closed) {
+      if (compute(t).netPL < 0) run++;
+      else break;
+    }
+
+    const breaches = [];
+    if (num(s.maxDailyLossPct) > 0 && lossPct >= num(s.maxDailyLossPct))
+      breaches.push({
+        kind: "dailyLoss",
+        text:
+          "You are down " + lossPct.toFixed(2) + "% today, at or past your " +
+          num(s.maxDailyLossPct) + "% daily stop. The rule says the day is over.",
+      });
+
+    if (num(s.maxTradesPerDay) > 0 && todays.length >= num(s.maxTradesPerDay))
+      breaches.push({
+        kind: "tradeCount",
+        text:
+          todays.length + " trades logged today, against your limit of " +
+          num(s.maxTradesPerDay) + ". Over-trading is the most common way a good system loses money.",
+      });
+
+    if (num(s.coolOffAfterLosses) > 0 && run >= num(s.coolOffAfterLosses))
+      breaches.push({
+        kind: "coolOff",
+        text:
+          run + " losses in a row. Your cool-off rule is " + num(s.coolOffAfterLosses) +
+          " — step away before the next entry, not after it.",
+      });
+
+    return {
+      today,
+      tradesToday: todays.length,
+      netToday,
+      lossPctToday: lossPct,
+      consecutiveLosses: run,
+      breaches,
+      muted: !s.guardrailsOn,
+      blocked: s.guardrailsOn && breaches.length > 0,
+    };
+  }
+
   function streak(trades) {
     const days = new Set(trades.map((t) => String(t.date || "").slice(0, 10)).filter(Boolean));
     if (!days.size) return 0;
@@ -364,6 +453,12 @@ window.Store = (() => {
         const out = driver.patch("settings", partial);
         emit("settings");
         return Object.assign({}, DEFAULT_SETTINGS, out);
+      },
+      /* back to defaults — used by the reset in settings */
+      clear() {
+        driver.clear("settings");
+        emit("settings");
+        return Object.assign({}, DEFAULT_SETTINGS);
       },
     },
 
@@ -438,6 +533,7 @@ window.Store = (() => {
 
     compute,
     discipline,
+    guardrails,
     stats,
     streak,
     uid,
