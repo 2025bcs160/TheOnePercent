@@ -498,7 +498,10 @@
       <div><div class="k">Discipline</div><div class="v">${d}/100</div></div>`;
   }
 
-  function openForm(id) {
+  /* `prefill` is a partial trade handed over from another screen — today
+     only the calculators. It is never an id, so the form still opens as a
+     new entry with the numbers already in it. */
+  function openForm(id, prefill) {
     const f = $("#trade-form");
     f.reset();
     $("#exits").innerHTML = "";
@@ -541,6 +544,24 @@
       f.stopHonoured.checked = true;
       f.contractValue.value = 1;
       f.fees.value = 0;
+
+      if (prefill) {
+        const set = (name, v) => {
+          if (v === null || v === undefined || v === "") return;
+          if (f.elements[name]) f.elements[name].value = v;
+        };
+        set("symbol", prefill.symbol);
+        set("side", prefill.side);
+        set("entry", prefill.entry);
+        set("stop", prefill.stop);
+        set("target", prefill.target);
+        set("size", prefill.size);
+        set("contractValue", prefill.contractValue);
+        set("fees", prefill.fees);
+        if (prefill.market && V.MARKETS.indexOf(prefill.market) >= 0) f.market.value = prefill.market;
+        if (prefill.tags && prefill.tags.length) f.tags.value = prefill.tags.join(", ");
+        $("#fm-title").textContent = "Log the trade you just sized";
+      }
     }
 
     liveCalc();
@@ -1024,6 +1045,30 @@
     window.addEventListener("storechange", render);
     render();
     showTab("trades");
+
+    /* arrived from a calculator: open the form with its numbers already in,
+       and consume the draft so a reload does not resurrect it */
+    const draft = fromHash() || (Store.draft && Store.draft.take());
+    if (draft) {
+      openForm(null, draft);
+      toast("Sized on the calculator — check it and save");
+    }
+  }
+
+  /* The calculators fall back to the URL fragment when storage is blocked
+     (private windows, embedded previews). Read it, then strip it so a
+     reload does not re-open the same draft. */
+  function fromHash() {
+    const m = /[#&]draft=([^&]+)/.exec(window.location.hash || "");
+    if (!m) return null;
+    let data = null;
+    try {
+      data = JSON.parse(decodeURIComponent(m[1]));
+    } catch (e) {
+      data = null;
+    }
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+    return data && typeof data === "object" ? data : null;
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

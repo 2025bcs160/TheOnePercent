@@ -27,13 +27,17 @@ window.Store = (() => {
   "use strict";
 
   const NS = "onepercent:";
-  const SINGLETONS = { settings: true, profile: true };
+  const SINGLETONS = { settings: true, profile: true, draft: true };
 
   /* ---------------------------------------------------------- defaults */
 
+  /* Defaults exist only for the window between landing and onboarding —
+     onboarding asks for all three, and the calculators let them be edited
+     in place. 1,000 UGX was the old default and it was a bug: it is about
+     a quarter of a dollar, which made every sized position round to zero. */
   const DEFAULT_SETTINGS = {
     balance: 1000,
-    currency: "UGX",
+    currency: "USD",
     riskPct: 1,
     accountName: "Demo account",
     timezone: (() => {
@@ -360,6 +364,35 @@ window.Store = (() => {
         const out = driver.patch("settings", partial);
         emit("settings");
         return Object.assign({}, DEFAULT_SETTINGS, out);
+      },
+    },
+
+    /* A trade the user has planned on another screen but not yet logged.
+       The calculators write one and the journal consumes it exactly once,
+       which is what keeps planned risk and logged risk the same number
+       instead of two numbers that happen to be typed twice. */
+    draft: {
+      get() {
+        const d = driver.get("draft");
+        return d && Object.keys(d).length ? d : null;
+      },
+      set(partial) {
+        driver.clear("draft");
+        const out = driver.patch("draft", partial);
+        emit("draft");
+        return out;
+      },
+      take() {
+        const d = api.draft.get();
+        if (d) {
+          driver.clear("draft");
+          emit("draft");
+        }
+        return d;
+      },
+      clear() {
+        driver.clear("draft");
+        emit("draft");
       },
     },
 

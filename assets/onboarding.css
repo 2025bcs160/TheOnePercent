@@ -372,6 +372,31 @@
 
 /* ============================================================ responsive */
 
+/* ------------------------------------------------------------ account
+   Question three: balance, currency, default risk. Fields come from
+   components.css so they are the same controls as the journal and the
+   calculators — one visual language for entering a number. */
+
+.ob-account {
+  display: grid;
+  grid-template-columns: 1fr 1fr 150px;
+  gap: 12px;
+  max-width: 620px;
+}
+
+.ob-account .fld span small {
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.ob-account-note {
+  max-width: 620px;
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
 @media (max-width: 880px) {
   .ob-markets {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -411,6 +436,12 @@
 
 @media (max-width: 460px) {
   .ob-markets {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .ob-account {
     grid-template-columns: minmax(0, 1fr);
   }
 }

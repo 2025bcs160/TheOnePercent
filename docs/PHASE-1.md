@@ -135,17 +135,17 @@ one persistent filter — date range and account — that every widget reads.
 
 ## 2. Build order
 
-Steps 1–3 are complete. Step 4 is in progress.
+Steps 1–5 are complete. Step 6 is next.
 
 | # | Step | State |
 | --- | --- | --- |
 | 1 | Cover page, shell, navigation, right rail | done |
 | 2 | Sign-up, login, onboarding | done |
 | 3 | Theme system, data layer, simulated feed | done |
-| 4 | **Journal** — log, filters, detail drawer, import | in progress |
-| 5 | Calculators and converters | next |
-| 6 | Dashboard widgets over real journal data | next |
-| 7 | Settings | 1A |
+| 4 | Journal — log, filters, detail drawer, import | done |
+| 5 | Calculators and converters | done |
+| 6 | **Dashboard widgets over real journal data** | next |
+| 7 | Settings | next |
 | 8 | Charts and Market Watch (Lightweight Charts) | 1B |
 | 9 | Market context — news, calendar, sentiment | 1B |
 | 10 | Learn — lesson paths and resource library | 1B |
@@ -199,11 +199,13 @@ pages/
   onboarding.html       markets → experience → balance & risk
   dashboard.html        feedback surface
   journal.html          trade log
+  calculators.html      sizing, risk, margin, P&L, converters
 assets/
   theme.js              sets data-theme before first paint (no flash)
   shell.css  shell.js   tokens, chrome, top nav, right rail, palette
   store.js              data layer — local driver today, rest driver later
-  feed.js               simulated market data, Demo badge
+  instruments.js        instrument + currency reference, all sizing maths
+                        (demo prices and rates, carries the Demo badge)
   <page>.css/.js        page-specific
 docs/PHASE-1.md         this file
 ```

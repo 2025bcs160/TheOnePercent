@@ -420,3 +420,169 @@ th[data-sort].on.asc::after {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------- forms
+   Field, fieldset and live-result primitives. These started life in
+   journal.css, and moved here the moment a second screen (the
+   calculators) needed the same inputs — a form on one screen must not
+   look different from the same form on another. */
+
+/* ---------------------------------------------------------- form */
+
+.fs {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.fs h3 {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fld {
+  display: block;
+  min-width: 0;
+}
+
+.fld > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-700);
+}
+
+.fld > span small {
+  font-weight: 400;
+  color: var(--faint);
+}
+
+.fld input,
+.fld select,
+.fld textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13.5px;
+}
+
+.fld input[type="number"],
+.fld input[type="datetime-local"] {
+  font-family: var(--mono);
+}
+
+.fld textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.fld input[aria-invalid="true"] {
+  border-color: var(--down);
+}
+
+.fld.chk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  background: var(--surface);
+}
+
+.fld.chk input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--brand);
+}
+
+.fld.chk span {
+  margin: 0;
+  font-size: 12.5px;
+}
+
+.hint {
+  margin: 9px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* live arithmetic block */
+.calc {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  background: var(--line);
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.calc div {
+  padding: 9px 11px;
+  background: var(--surface-2);
+}
+
+.calc .k {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.calc .v {
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc .v.up {
+  color: var(--up);
+}
+
+.calc .v.down {
+  color: var(--down);
+}
+
+.calc .v.warn {
+  color: var(--warn-ink);
+}
+
+/* ---------------------------------------------------------- toast
+   Shared: any screen that saves something needs to say so once, briefly. */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 26px;
+  z-index: 80;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--invert-bg);
+  color: var(--invert-ink, var(--on-brand));
+  font-size: 13px;
+  box-shadow: var(--shadow-m);
+}

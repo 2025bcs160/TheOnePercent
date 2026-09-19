@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Choose your markets — TheOnePercent</title>
-<meta name="description" content="Two questions that configure your dashboard, your calculators and where your lesson path starts.">
+<title>Set up your account — TheOnePercent</title>
+<meta name="description" content="Three questions that configure your dashboard, your calculators and where your lesson path starts.">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,7 @@
 
 <script src="../assets/theme.js"></script>
 <link rel="stylesheet" href="../assets/shell.css">
+<link rel="stylesheet" href="../assets/components.css">
 <link rel="stylesheet" href="../assets/onboarding.css">
 </head>
 
@@ -42,9 +43,14 @@
         <div class="ob-dot" aria-hidden="true"></div>
         <small>Level</small>
       </div>
+      <div class="ob-bar" data-filled="false" id="bar-account" aria-hidden="true"></div>
+      <div class="ob-step" data-state="todo" id="step-account">
+        <div class="ob-dot" aria-hidden="true"></div>
+        <small>Account</small>
+      </div>
     </div>
 
-    <span class="ob-count" id="step-count">Step 2 of 3</span>
+    <span class="ob-count" id="step-count">Step 2 of 4</span>
   </div>
 </header>
 
@@ -133,6 +139,31 @@
       </div>
     </section>
 
+    <!-- ================================================= account
+         The third question. Every calculator reads balance, currency and
+         default risk, so asking here is the difference between a sizing
+         tool that works on day one and one that quietly uses defaults. -->
+    <section class="ob-section">
+      <h2 class="ob-q" style="font-size:22px">What are you trading with?</h2>
+      <p class="ob-q-sub">Every calculator and every journal entry reads these three. Change them any time in settings.</p>
+
+      <div class="ob-account">
+        <label class="fld">
+          <span>Account currency</span>
+          <select id="ob-currency"></select>
+        </label>
+        <label class="fld">
+          <span>Starting balance</span>
+          <input id="ob-balance" type="number" step="any" min="0" inputmode="decimal" placeholder="1000">
+        </label>
+        <label class="fld">
+          <span>Risk per trade <small>% of balance</small></span>
+          <input id="ob-risk" type="number" step="any" min="0" max="100" inputmode="decimal" value="1">
+        </label>
+      </div>
+      <p class="ob-account-note" id="ob-risk-note"></p>
+    </section>
+
     <!-- ================================================= actions -->
     <div class="ob-actions">
       <button type="submit" class="btn btn-primary btn-lg" id="ob-continue" disabled>Continue →</button>
@@ -143,6 +174,8 @@
   </form>
 </main>
 
+<script src="../assets/store.js"></script>
+<script src="../assets/instruments.js"></script>
 <script src="../assets/shell.js"></script>
 <script src="../assets/onboarding.js"></script>
 </body>
