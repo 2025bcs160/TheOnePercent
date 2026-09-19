@@ -97,6 +97,15 @@ window.Instruments = (() => {
     { symbol: "GBPJPY", name: "Pound / yen", market: "Forex", base: "GBP", quote: "JPY", price: 200.41, dp: 3, pip: 0.01, contract: 100000, unitValue: 1 },
     { symbol: "EURGBP", name: "Euro / pound", market: "Forex", base: "EUR", quote: "GBP", price: 0.8516, dp: 5, pip: 0.0001, contract: 100000, unitValue: 1 },
 
+    /* East African pairs. Quoted at the bank rather than a broker, so the
+       spread is wide and the pip is a whole point on the shilling pairs —
+       both facts the charts screen shows rather than hides. These are here
+       because the product is built in Kampala and a trader here checks
+       USDUGX before anything on this list. */
+    { symbol: "USDUGX", name: "US dollar / Ugandan shilling", market: "Forex", base: "USD", quote: "UGX", price: 3760, dp: 1, pip: 1, contract: 100000, unitValue: 1 },
+    { symbol: "USDKES", name: "US dollar / Kenyan shilling", market: "Forex", base: "USD", quote: "KES", price: 129.2, dp: 2, pip: 0.01, contract: 100000, unitValue: 1 },
+    { symbol: "USDZAR", name: "US dollar / South African rand", market: "Forex", base: "USD", quote: "ZAR", price: 18.12, dp: 4, pip: 0.0001, contract: 100000, unitValue: 1 },
+
     /* metals — one lot of spot gold is 100 ounces, silver 5,000 */
     { symbol: "XAUUSD", name: "Gold spot", market: "Commodities", base: "XAU", quote: "USD", price: 2341.5, dp: 2, pip: 0.1, contract: 100, unitValue: 1 },
     { symbol: "XAGUSD", name: "Silver spot", market: "Commodities", base: "XAG", quote: "USD", price: 27.86, dp: 3, pip: 0.01, contract: 5000, unitValue: 1 },
@@ -110,6 +119,8 @@ window.Instruments = (() => {
     { symbol: "US500", name: "S&P 500 index", market: "Indices", base: "US500", quote: "USD", price: 5431.6, dp: 1, pip: 0.1, contract: 1, unitValue: 1 },
     { symbol: "US30", name: "Dow 30 index", market: "Indices", base: "US30", quote: "USD", price: 38942, dp: 1, pip: 1, contract: 1, unitValue: 1 },
     { symbol: "DE40", name: "DAX 40 index", market: "Indices", base: "DE40", quote: "EUR", price: 18412, dp: 1, pip: 1, contract: 1, unitValue: 1 },
+    { symbol: "NAS100", name: "US tech 100 index", market: "Indices", base: "NAS100", quote: "USD", price: 19846, dp: 1, pip: 1, contract: 1, unitValue: 1 },
+    { symbol: "DXY", name: "US dollar index", market: "Indices", base: "DXY", quote: "USD", price: 104.32, dp: 2, pip: 0.01, contract: 1, unitValue: 100 },
 
     /* futures — the multiplier is the whole point, so it lives in unitValue */
     { symbol: "NQ1!", name: "Nasdaq 100 futures", market: "Futures", base: "NQ", quote: "USD", price: 19884, dp: 2, pip: 0.25, contract: 1, unitValue: 20 },

@@ -48,23 +48,63 @@ to this browser. The verification screen does not pretend an email was sent.
 The leaderboard ships in 1B, after the backend, because a leaderboard with one
 device and no server is theatre.
 
-### 1.3 Charts: Lightweight Charts, not hand-rolled
+### 1.3 Charts: hand-rolled after all — reversed
 
-Hand-building candlesticks, Fibonacci, zones, indicators and a volume pane is a
-month of work that ends up worse than free. Phase 1B uses
-[Lightweight Charts](https://tradingview.github.io/lightweight-charts/), the
-charting engine TradingView open-sourced, with our own toolbar, drawing overlay
-and — the part that actually matters — our own **Save to journal** button. The
-engine is theirs; the product is ours. The existing canvas sparklines stay,
-because they are small, fast, and nothing about them is worth a dependency.
+**This section has been reversed. Read the reasoning, not just the conclusion.**
+
+The original call was to use
+[Lightweight Charts](https://tradingview.github.io/lightweight-charts/) and
+keep only the toolbar, the drawing overlay and the **Save to journal** button as
+ours. The argument was sound in the abstract: hand-building candlesticks,
+Fibonacci, zones, indicators and a volume pane is a month of work.
+
+Then the month of work already existed. `assets/charts-engine.js` is a complete
+canvas engine, and the things it does are precisely the things this product is
+for, not the things a generic charting library is for:
+
+- **The position tool.** Drag entry, stop and target on the chart and the size
+  comes back through `Instruments.positionSize` against the real account
+  balance and risk rule. This is the whole reason the page exists. Lightweight
+  Charts has no primitive for it — it would be a separate overlay canvas kept
+  in sync with someone else's scale, which is the hand-rolled work again with a
+  coordination bug attached.
+- **Bar replay.** Step the chart forward one bar at a time to rehearse a setup.
+- **Volume profile** over the visible range.
+- **A drawing layer** with 21 tools that hit-tests, selects and edits.
+
+Porting to Lightweight Charts would mean deleting four features to gain a
+dependency. So: the engine stays ours. What was taken from the original call is
+the discipline behind it — no invented data, one source of prices, one source of
+position sizing.
+
+The existing canvas sparklines stay, unchanged, for the same reason as before.
 
 ### 1.4 Market data: simulated now, real behind one interface
 
-All quotes come from `Feed`, which streams deterministic, realistic prices and
-carries a visible **Demo data** badge wherever it is displayed. Swapping in a
-real provider is one module, and the badge is the promise that we will never
-quietly show fake prices as real ones. The PDF's "visible refresh time and a
-graceful failure state" is kept, and now has something to be true about.
+All quotes come from `Feed` (`assets/feed.js`), which streams deterministic,
+realistic prices and carries a visible **Demo data** badge wherever it is
+displayed. Swapping in a real provider is one module, and the badge is the
+promise that we will never quietly show fake prices as real ones. The PDF's
+"visible refresh time and a graceful failure state" is kept, and now has
+something to be true about.
+
+`Feed` is the single price source for the whole app:
+
+| Member | Returns |
+| --- | --- |
+| `Feed.list()` | every tradeable symbol, from `Instruments.INSTRUMENTS` |
+| `Feed.history(sym, iv)` | 620 OHLCV bars, seeded so they never change between reloads |
+| `Feed.quote(sym)` / `Feed.last(sym)` | current price and change |
+| `Feed.spark(sym, n)` | a short close series for sparklines |
+| `Feed.subscribe(fn)` | tick stream; returns its own unsubscribe |
+| `Feed.badge({compact})` | the **Demo data** chip, so no screen can forget it |
+| `Feed.pause()` / `resume()` / `isLive` | stop ticking when a tab is hidden |
+
+Series are anchored so the last close equals the instrument's price in
+`Instruments`, which is why a size calculated on the charts page matches one
+calculated in the calculators. `assets/shell.js` still carries its own `QUOTES`
+array for the right rail — that is the last remaining second price source and
+should read from `Feed` next.
 
 ### 1.5 Dark first
 
@@ -135,7 +175,8 @@ one persistent filter — date range and account — that every widget reads.
 
 ## 2. Build order
 
-Steps 1–7 are complete, plus the pre-trade checklist below. Step 8 (charts) is next.
+Steps 1–8 are complete, plus the pre-trade checklist below. Step 9 (market
+context) is next.
 
 | # | Step | State |
 | --- | --- | --- |
@@ -146,7 +187,7 @@ Steps 1–7 are complete, plus the pre-trade checklist below. Step 8 (charts) is
 | 5 | Calculators and converters | done |
 | 6 | **Dashboard widgets over real journal data** | done |
 | 7 | Settings — account, risk rules, guardrails, profile, data | done |
-| 8 | Charts and Market Watch (Lightweight Charts) | 1B |
+| 8 | **Charts and Market Watch** | done |
 | 9 | Market context — news, calendar, sentiment | 1B |
 | 10 | Learn — lesson paths and resource library | 1B |
 | 11 | Backend (`rest` driver), real accounts and verification | 1B |
@@ -300,12 +341,16 @@ pages/
   journal.html          trade log
   calculators.html      sizing, risk, margin, P&L, converters
   settings.html         account, risk rules, guardrails, profile, data
+  charts.html           chart, drawing tools, position tool, market watch
 assets/
   theme.js              sets data-theme before first paint (no flash)
   shell.css  shell.js   tokens, chrome, top nav, right rail, palette
   store.js              data layer — local driver today, rest driver later
   instruments.js        instrument + currency reference, all sizing maths
                         (demo prices and rates, carries the Demo badge)
+  feed.js               the only price source — bars, quotes, ticks, badge
+  charts-engine.js      canvas renderer, indicators, drawing hit-testing
+  charts.js             charts page wiring — panel, watchlist, alerts, save
   <page>.css/.js        page-specific
 docs/PHASE-1.md         this file
 ```
@@ -313,6 +358,16 @@ docs/PHASE-1.md         this file
 Conventions: every colour is a token, every page sets `data-page` and
 `data-depth` on `<body>` and includes `shell.js` last, and no screen touches
 browser storage directly — it goes through `Store`.
+
+**The canvas cannot read a stylesheet.** `charts-engine.js` picks colours with
+`css('--name')` at draw time, which means the chart needs every colour it uses
+to exist as a custom property. `assets/charts.css` opens with a `:root` block
+that maps the engine's short names onto the shell tokens (`--txt2` → `--muted`,
+`--dn` → `--down`, `--grid` → a mix of `--line`, and so on). That block is the
+entire contract between the two files. Add a `css('--x')` call to the engine and
+the alias has to be added there, or the chart draws with an empty string and the
+shape silently disappears. Aliases resolve to literal colours rather than
+`color-mix()` results, because canvas colour parsing is stricter than CSS is.
 
 ## 3e. Added beyond the original plan: the pre-trade checklist
 
@@ -372,3 +427,246 @@ leaving it blank.
 
 `discipline()` weights were deliberately **not** changed. Folding the checklist
 into the score would silently rewrite every past trade's grade.
+
+---
+
+## 3f. Added beyond the original plan: the charts page
+
+The PDF asked for a chart with indicators, drawing tools and a watchlist. What
+shipped is that, plus the four things below — each because the chart is where a
+trade is decided, and a decision surface that cannot finish the decision is
+decoration.
+
+**The position tool.** Drag three levels on the chart — entry, stop, target —
+and the Position tab answers with a size, in lots, from
+`Instruments.positionSize` against the balance and risk rule in `Store.settings`.
+Not a second sizing implementation: the same function the calculators call, so
+the two screens cannot disagree. The readouts alongside it are the ones that
+decide whether to take the trade at all — R multiple after costs, stop distance
+in pips, spread and commission as a share of the risk, and the day's risk if
+this one fills against the `maxDailyLossPct` cap.
+
+**Save to journal.** The button the whole page exists for. It writes a draft
+through `Store.draft.set` and hands off to the journal form, carrying the
+symbol, side, all three prices, the size, the note typed under the chart, a
+JPEG of the chart as drawn, and `chartState` — the symbol, interval, studies and
+drawings as data, so the setup can be searched and reopened later rather than
+only looked at. The journal form recognises `source: 'charts'` and says where the
+entry came from.
+
+**Bar replay.** Step forward one bar at a time over historical data to rehearse
+a setup before risking anything on it.
+
+**Workspaces and multi-chart layouts.** Up to four charts at once, and named
+workspaces persisted in `Store.settings.chartsWorkspaces`, because comparing a
+pair against the dollar index is a two-chart question.
+
+### Honesty rules the page holds itself to
+
+- **No invented statistics.** The win-rate-by-hour pane computes from
+  `Store.trades`. Below five trades it says so and shows nothing, rather than
+  drawing a shape out of noise. The coaching lines under the position readouts
+  are derived from the numbers on screen and the user's own logged history — if
+  there is no history for that symbol, the line says there is no history for
+  that symbol.
+- **Every price is badged.** `Feed.badge()` is in the toolbar, always.
+- **An indicator pane that cannot be given 56px is not drawn**, and the legend
+  says how many were dropped. A 12px RSI is not a reading.
+- **Alerts persist** (`Store.settings.chartsAlerts`) and their hint says plainly
+  that they only fire while the page is open.
+
+### Sizes between phone and desktop
+
+The page was checked at 375px and at 1440px and the sizes in between were
+assumed to interpolate. They did not:
+
+- **A short window squashed the price pane into a ribbon.** The pane budget had
+  a 90px floor, so at 500px of viewport height the candles got about 100px while
+  Volume and RSI kept their full 56px each. The floor is now 170px — in a short
+  window the indicator panes give up their space first, which is the right
+  order, since the price is the reason the page exists.
+- **The Data Window covered the chart.** It hid below 460px of chart width, but
+  it floats over the candles and needs far more room than that to be worth its
+  space. The gate is now 760px.
+- **The panel's sub-values pushed the layout sideways.** `.ro` rows now wrap.
+- **Under 640px of height** the legend's study chips and the note bar's caption
+  are hidden — both are redundant (the studies are named in the panel, the note
+  box has its own placeholder) and the chart gets the pixels.
+
+### Two contrast bugs this turned up
+
+- `body[data-page="charts"] .btn` was unscoped, and `.btn` is the shell's global
+  button class — so the charts page repainted the shared nav's buttons `--muted`.
+  "Sign up" was brand-grey on brand-blue: **1.09:1**. The charts button rules are
+  now scoped to the chart's own containers. This was a charts-page regression, not
+  the shell-wide bug it was first reported as.
+- With that fixed the button was white on brand, which is 3.77:1 in the dark
+  theme — still under AA, because the dark theme lifts the brand to `#5b78ff`.
+  Dark `--on-brand` is now `#0b1020` (5.03:1), and new `--on-up` / `--on-down`
+  tokens do the same job for the direction buttons. Every filled control now
+  measures at or above 4.5:1 in both themes.
+
+### Screenshots and the storage quota
+
+A chart screenshot is about 50KB of base64 and `localStorage` holds roughly 5MB,
+so a heavy journal can fill it. The old `writeKey` caught the quota error, kept
+the value in memory and returned — which meant the trade looked saved and was
+gone on the next reload. Now a failed write retries once with the `shot` fields
+stripped, so:
+
+1. The trade, its levels, its size and its `chartState` always persist.
+2. The pictures are what gets dropped, never the record.
+3. `Store.imagesShed()` goes true and the journal says so in the save toast,
+   pointing at CSV export and clearing old entries.
+
+Verified by filling `localStorage` to its limit and saving a trade with a 60KB
+screenshot: the entry persisted, the image did not, and nothing was lost
+silently.
+
+### Accessibility and small screens
+
+- Every toolbar action has a text label. The icon-only glyph row from the
+  prototype became a labelled **More** menu; the drawing rail keeps icons but
+  every tool has a title and an accessible name.
+- At 640px and below the toolbar wraps to two rows so the selected interval
+  stays visible, the study chips hide (their values are printed on each pane's
+  title line anyway), and the drawing rail moves to the bottom edge where a
+  thumb can reach it. The panel becomes a bottom sheet.
+- Axis numbers, pane bounds and indicator levels use `--muted`, not `--faint`:
+  they are read, not glanced at, and `--faint` on the chart surface sat under
+  the 4.5:1 the rest of the app holds itself to.
+
+### East African pairs
+
+`USDUGX`, `USDKES` and `USDZAR` were added to `Instruments` alongside `NAS100`
+and `DXY`. A Ugandan trader opening a chart for the first time should find their
+own currency in the symbol list.
+
+## Terminal parity
+
+The reference was TradingView's chart page, read from nine screenshots at the
+1366×768 the user actually works at. What follows is what that comparison
+turned up, and what was deliberately not copied.
+
+### The drawing rail
+
+Forty tools in eight groups — cursors, lines, Fibonacci, Gann, channels,
+patterns, harmonics, shapes, annotations, measurement. Each group opens a flyout
+rather than a flat scrolling column, because a rail of forty icons costs more to
+read than it saves. Every one of them draws; none is a stub.
+
+### Intervals
+
+Twenty-nine intervals in five groups: seconds, minutes, hours, days, weeks,
+months. Ticks were left out on purpose — there is no order flow behind this feed
+to aggregate, and an interval that cannot mean what it says should not be on the
+menu.
+
+The chip row shows favourites only, and a custom interval can be typed (`7m`,
+`8H`, `90m`, `2D`). The selected interval always shows even when it is not a
+favourite, dashed to say so.
+
+### Date ranges
+
+Nine ranges along the bottom. A range changes the interval as well as the zoom
+and says so in a toast, because 1Y of one-minute candles is 525,600 bars and
+nobody wants that: each range targets roughly 160 candles and refuses a
+combination that would show fewer than 24. YTD is real calendar time since
+1 January, not 365 days divided by something.
+
+### One clock
+
+The bottom bar carries the chart's clock, and a toggle between UTC and local.
+The axis labels, the data window and that clock all read the same source, so the
+three cannot disagree. The choice persists through `Store.settings`.
+
+### Bid, ask and spread
+
+A legend row under the OHLC line: sell price, spread, buy price. The spread is
+`S.spread` from the feed — the same number the position panel turns into
+"spread and commission are 5.2% of the risk" — so the badge and that sentence
+cannot drift. Half goes each side of the last close. The unit rides on the
+number: pips on a pair, points on an index.
+
+### The symbol card
+
+Above the watchlist: the symbol, its market, a price large enough to read
+across a room, the change, and a real day-range bar with a marker where the last
+price falls between the session low and high. 2341.75 says nothing until you
+know the day ran 2284.50 to 2342.23.
+
+The watchlist below it is grouped by asset class in a fixed order. Headings
+disappear when a sort is active, because FOREX above rows ordered by percentage
+gain would misdescribe what governs the order.
+
+### Full screen
+
+Through the browser's own API, not a class that hides the page chrome — only the
+real thing removes the operating system's furniture. The label is driven by
+`fullscreenchange`, since Escape leaves full screen without ever reaching a
+click handler.
+
+### Two bugs the comparison uncovered
+
+**Every dropdown on the chart toolbar was invisible.** `.ct-l` and `.ctoolbar`
+both carry `overflow: hidden`, which they need or a long symbol name widens the
+toolbar past the chart. A `.menu` positioned `absolute; top: 34px` below a 34px
+toolbar falls entirely outside that box. The panels had layout and
+`getComputedStyle` called them visible; they simply never painted. Bar replay,
+saved workspaces, undo, redo, download a PNG, chart settings and the playbook
+were unreachable by mouse. Fixed by making `.menu` `position: fixed` with a
+`placeMenu()` that positions under the button, right-aligns where asked, clamps
+to the viewport and shortens rather than flips a long menu.
+
+**Every dialog on the page was invisible.** `shell.css` uses `.sheet` for the
+mobile navigation drawer and parks it at `visibility: hidden` until a `.open`
+class arrives. The charts page reuses that class name for its centred dialogs
+and never adds `.open`. All ten — indicators and studies, chart settings,
+keyboard shortcuts, saved workspaces, symbol search, alerts, Elliott waves, the
+drawing editor, the command palette, ask-the-chart — opened to a blurred
+backdrop and nothing else. Their markup was complete and `textContent` returned
+the strings; only `innerText` came back empty. Two bugs were stacked here: the
+menu that opened them never painted, and neither did they.
+
+### Not copied
+
+- **A news feed.** Every headline would have to be invented. The feed on this
+  page is simulated and says so; fabricated news read as fact is a different
+  and worse thing.
+- **A community script marketplace.** There is no community and no script
+  engine. An empty storefront is not a feature.
+- **A stock screener.** Twenty-seven instruments do not need screening, and the
+  page is for reading one chart well.
+- **Tick intervals.** No order flow behind the feed.
+
+### Panel, rail and export
+
+**The Watch tab is the watchlist.** A symbol card, the watchlist and the compare
+chips used to stack in one pane, which on a 768px screen left the list as the
+smallest part of its own tab. Three views behind a sticky segmented switcher
+now — Watchlist, Details, Compare — each with the whole pane, the choice
+remembered in `chartsWatchView`. Each paints only while it is the one showing.
+
+**Details carries the contract spec.** Contract size, tick size, tick value,
+smallest size, digits, market, venue — read from the same instrument table the
+position panel and the calculators size from, so the three cannot disagree. A
+field the table has no value for is omitted rather than estimated.
+
+**Favourite drawing tools.** A star on any flyout row promotes that tool to its
+own button at the top of the rail. Persisted in `chartsFavTools` and filtered
+through the rail on load, so a tool dropped between releases vanishes from the
+favourites rather than becoming a dead button.
+
+**Snapshots are stamped.** A chart PNG leaves this app and gets posted in a
+group chat, so it carries the logo and the words "Simulated prices" alongside
+the symbol, interval and a UTC timestamp. That second part is not decoration: a
+candlestick chart with a broker-looking price scale is exactly what people
+screenshot and pass off as a live account. Drawn on a copy, above the time axis,
+never on the canvas the user is still trading from.
+
+**Search found nothing, twice over.** The nav sat at the same z-index as the
+charts toolbar and lost the tie, so its results panel and its Markets menu were
+painted behind the toolbar. Separately, the market half of the search index was
+a five-entry demo array: twenty-two of the twenty-seven instruments, including
+every shilling pair, were unsearchable. It reads `Instruments.INSTRUMENTS` now,
+with `base` and `quote` in the haystack so a currency code finds its pairs.

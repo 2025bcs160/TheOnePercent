@@ -461,6 +461,13 @@
 
   let shotData = null;
 
+  /* Set when the charts screen hands over a trade. The screenshot proves
+     what the chart looked like; this records what it *was* — symbol,
+     interval, chart type, studies, the visible range — so the setup is
+     searchable, and so a future version can reopen it rather than asking
+     the user to read it back off a picture. Cleared with the form. */
+  let pendingChartState = null;
+
   function readForm() {
     const f = $("#trade-form");
     const fd = new FormData(f);
@@ -505,6 +512,7 @@
       },
       exits,
       shot: shotData,
+      chartState: pendingChartState || (existing && existing.chartState) || null,
     };
   }
 
@@ -699,15 +707,22 @@
     renderChecklist(t, c);
   }
 
-  /* `prefill` is a partial trade handed over from another screen — today
-     only the calculators. It is never an id, so the form still opens as a
-     new entry with the numbers already in it. */
+  /* `prefill` is a partial trade handed over from another screen — the
+     calculators, and now the charts. It is never an id, so the form still
+     opens as a new entry with the numbers already in it.
+
+     Charts hands over more than numbers: the note written while the chart
+     was on screen becomes the plan, and the annotated image becomes the
+     screenshot, so the entry carries the reason and the picture without
+     the user retyping either. `chartState` rides along unshown — it is
+     what lets a later version reopen the exact chart. */
   function openForm(id, prefill) {
     const f = $("#trade-form");
     f.reset();
     $("#exits").innerHTML = "";
     f.elements.tradeId.value = "";
     shotData = null;
+    pendingChartState = null;
     $("#shot-preview").hidden = true;
     $("#shot-preview").innerHTML = "";
 
@@ -777,7 +792,25 @@
         set("fees", prefill.fees);
         if (prefill.market && V.MARKETS.indexOf(prefill.market) >= 0) f.market.value = prefill.market;
         if (prefill.tags && prefill.tags.length) f.tags.value = prefill.tags.join(", ");
-        $("#fm-title").textContent = "Log the trade you just sized";
+        if (prefill.setup && V.SETUPS.indexOf(prefill.setup) >= 0) f.setup.value = prefill.setup;
+        if (prefill.session && V.SESSIONS.indexOf(prefill.session) >= 0) f.session.value = prefill.session;
+        set("plan", prefill.plan);
+
+        /* The chart came across as a data URL. Show it the same way an
+           uploaded screenshot is shown, so it can be removed if the user
+           would rather not keep it. */
+        if (prefill.shot) {
+          shotData = prefill.shot;
+          showShot();
+        }
+        if (prefill.chartState) pendingChartState = prefill.chartState;
+
+        $("#fm-title").textContent =
+          prefill.source === "charts" ? "Log the trade you just planned" : "Log the trade you just sized";
+        if (prefill.source === "charts") {
+          $("#pt-intro").textContent =
+            "Your note from the chart is in the reason below, and the chart is attached. Check it still reads true before you save.";
+        }
       }
     }
 
@@ -878,7 +911,23 @@
     if (!t.id) delete t.id;
     Store.trades.save(t);
     close($("#form-drawer"));
-    toast(t.id ? "Trade updated" : "Trade logged");
+
+    /* The trade is what matters, so Store drops chart screenshots rather
+       than lose an entry when the browser's storage is full. Say so — a
+       screenshot that quietly is not there is worse than one never offered. */
+    if (Store.imagesShed && Store.imagesShed()) {
+      toast(
+        t.id ? "Trade updated" : "Trade logged",
+        "This browser's storage is full, so chart screenshots were dropped to make room. Every trade and number is saved. Export to CSV and clear old entries in Settings to get pictures back.",
+      );
+    } else if (Store.storageBlocked && Store.storageBlocked()) {
+      toast(
+        "Saved for this session only",
+        "This browser is not letting the app store data, so the log will be gone when the tab closes. Export to CSV before you leave.",
+      );
+    } else {
+      toast(t.id ? "Trade updated" : "Trade logged");
+    }
   }
 
   /* ------------------------------------------------------------ CSV */
@@ -1319,12 +1368,19 @@
     render();
     showTab("trades");
 
-    /* arrived from a calculator: open the form with its numbers already in,
-       and consume the draft so a reload does not resurrect it */
+    /* arrived from a calculator or from the chart: open the form with its
+       numbers already in, and consume the draft so a reload does not
+       resurrect it. The message has to name the right screen — telling
+       someone who just dragged levels on a chart that they sized it on the
+       calculator is a small lie that makes them doubt the numbers. */
     const draft = fromHash() || (Store.draft && Store.draft.take());
     if (draft) {
       openForm(null, draft);
-      toast("Sized on the calculator — check it and save");
+      toast(
+        draft.source === "charts"
+          ? "Planned on the chart — check it and save"
+          : "Sized on the calculator — check it and save",
+      );
     }
   }
 

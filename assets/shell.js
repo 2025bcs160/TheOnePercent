@@ -53,7 +53,12 @@ window.Shell = (() => {
 
   const memory = new Map();
   const STORE = ["local", "Storage"].join("");
-  const KEYS = ["onepercent:profile", "onepercent.profile", "op_profile", "onboarding"];
+  const KEYS = [
+    "onepercent:profile",
+    "onepercent.profile",
+    "op_profile",
+    "onboarding",
+  ];
 
   function store() {
     try {
@@ -113,7 +118,8 @@ window.Shell = (() => {
       const markets = []
         .concat(data.markets || data.selectedMarkets || data.assets || [])
         .filter(Boolean);
-      const experience = data.experience || data.level || data.experienceLevel || "";
+      const experience =
+        data.experience || data.level || data.experienceLevel || "";
       const name = data.name || data.fullName || data.firstName || "";
       const email = data.email || "";
       if (!markets.length && !experience && !name) continue;
@@ -131,7 +137,10 @@ window.Shell = (() => {
 
   const me = profile();
   const authed = body.dataset.auth ? body.dataset.auth === "in" : !!me;
-  const displayName = (me && me.name) || (me && me.email ? me.email.split("@")[0] : "") || "Trader";
+  const displayName =
+    (me && me.name) ||
+    (me && me.email ? me.email.split("@")[0] : "") ||
+    "Trader";
   const initials =
     displayName
       .split(/[\s._-]+/)
@@ -143,7 +152,8 @@ window.Shell = (() => {
   /* ---------------------------------------------------------- icons */
 
   const ICON = {
-    caret: '<svg viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.6 5 6.6l3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    caret:
+      '<svg viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 3.6 5 6.6l3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     search:
       '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="4.6" stroke="currentColor" stroke-width="1.5"/><path d="M10.6 10.6 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
     burger:
@@ -178,16 +188,22 @@ window.Shell = (() => {
     ["Commodities", "metals"],
   ];
 
-  const MORE_LINKS = ["Economic calendar", "News & sentiment", "Discipline leaderboard", "Resource library"];
+  const MORE_LINKS = [
+    "Economic calendar",
+    "News & sentiment",
+    "Discipline leaderboard",
+    "Resource library",
+  ];
 
   function navHTML() {
     const links = NAV.map(
       (n) =>
-        `<a href="${n.href}"${page === n.id ? ' aria-current="page"' : ""}>${n.label}</a>`
+        `<a href="${n.href}"${page === n.id ? ' aria-current="page"' : ""}>${n.label}</a>`,
     ).join("");
 
     const markets = MARKET_LINKS.map(
-      ([label, sub]) => `<a href="${P.markets}">${label} <small>${sub}</small></a>`
+      ([label, sub]) =>
+        `<a href="${P.markets}">${label} <small>${sub}</small></a>`,
     ).join("");
 
     const more = MORE_LINKS.map((l) => `<a href="#">${l}</a>`).join("");
@@ -250,12 +266,14 @@ window.Shell = (() => {
   function sheetHTML() {
     const links = NAV.map(
       (n) =>
-        `<a class="sheet-link" href="${n.href}"${page === n.id ? ' aria-current="page"' : ""}>${n.label}</a>`
+        `<a class="sheet-link" href="${n.href}"${page === n.id ? ' aria-current="page"' : ""}>${n.label}</a>`,
     ).join("");
     const markets = MARKET_LINKS.map(
-      ([label]) => `<a class="sheet-link" href="${P.markets}">${label}</a>`
+      ([label]) => `<a class="sheet-link" href="${P.markets}">${label}</a>`,
     ).join("");
-    const more = MORE_LINKS.map((l) => `<a class="sheet-link" href="#">${l}</a>`).join("");
+    const more = MORE_LINKS.map(
+      (l) => `<a class="sheet-link" href="#">${l}</a>`,
+    ).join("");
 
     const cta = authed
       ? `<a class="btn btn-quiet" href="${P.settings}">Settings</a>
@@ -280,11 +298,46 @@ window.Shell = (() => {
   /* ---------------------------------------------------------- rail data */
 
   const QUOTES = [
-    { symbol: "EURUSD", name: "Euro / US Dollar", cls: "Forex", price: 1.0842, dec: 4, chg: 0.38 },
-    { symbol: "BTCUSD", name: "Bitcoin", cls: "Crypto", price: 64218, dec: 0, chg: 1.92 },
-    { symbol: "NQ1!", name: "Nasdaq 100 futures", cls: "Futures", price: 19884, dec: 0, chg: -0.21 },
-    { symbol: "US500", name: "S&P 500 index", cls: "Indices", price: 5431.6, dec: 1, chg: 0.78 },
-    { symbol: "XAUUSD", name: "Gold spot", cls: "Commodities", price: 2341.5, dec: 1, chg: 0.44 },
+    {
+      symbol: "EURUSD",
+      name: "Euro / US Dollar",
+      cls: "Forex",
+      price: 1.0842,
+      dec: 4,
+      chg: 0.38,
+    },
+    {
+      symbol: "BTCUSD",
+      name: "Bitcoin",
+      cls: "Crypto",
+      price: 64218,
+      dec: 0,
+      chg: 1.92,
+    },
+    {
+      symbol: "NQ1!",
+      name: "Nasdaq 100 futures",
+      cls: "Futures",
+      price: 19884,
+      dec: 0,
+      chg: -0.21,
+    },
+    {
+      symbol: "US500",
+      name: "S&P 500 index",
+      cls: "Indices",
+      price: 5431.6,
+      dec: 1,
+      chg: 0.78,
+    },
+    {
+      symbol: "XAUUSD",
+      name: "Gold spot",
+      cls: "Commodities",
+      price: 2341.5,
+      dec: 1,
+      chg: 0.44,
+    },
   ];
 
   /* UTC open hours, Monday–Friday */
@@ -302,19 +355,25 @@ window.Shell = (() => {
   ];
 
   const fmt = (n, d) =>
-    n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+    n.toLocaleString("en-US", {
+      minimumFractionDigits: d,
+      maximumFractionDigits: d,
+    });
   const pct = (n) => (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(2) + "%";
 
   function watchlist() {
-    const picked = me && me.markets.length ? me.markets.map((m) => String(m).toLowerCase()) : null;
+    const picked =
+      me && me.markets.length
+        ? me.markets.map((m) => String(m).toLowerCase())
+        : null;
     const rows = picked
       ? QUOTES.filter((q) =>
           picked.some(
             (p) =>
               q.cls.toLowerCase().includes(p) ||
               p.includes(q.cls.toLowerCase()) ||
-              q.symbol.toLowerCase() === p
-          )
+              q.symbol.toLowerCase() === p,
+          ),
         )
       : QUOTES;
     return rows.length ? rows : QUOTES;
@@ -324,8 +383,15 @@ window.Shell = (() => {
     const h = now.getUTCHours() + now.getUTCMinutes() / 60;
     const weekday = now.getUTCDay() >= 1 && now.getUTCDay() <= 5;
     return SESSIONS.map((s) => {
-      const open = s.open < s.close ? h >= s.open && h < s.close : h >= s.open || h < s.close;
-      return { name: s.name, open: weekday && open, window: `${String(s.open).padStart(2, "0")}:00–${String(s.close).padStart(2, "0")}:00 UTC` };
+      const open =
+        s.open < s.close
+          ? h >= s.open && h < s.close
+          : h >= s.open || h < s.close;
+      return {
+        name: s.name,
+        open: weekday && open,
+        window: `${String(s.open).padStart(2, "0")}:00–${String(s.close).padStart(2, "0")}:00 UTC`,
+      };
     });
   }
 
@@ -343,7 +409,7 @@ window.Shell = (() => {
         ([id, tip, icon, badge]) =>
           `<button data-rail="${id}" data-tip="${tip}" aria-label="${tip}" aria-expanded="false" aria-controls="rp-${id}">
              ${icon}${badge ? '<span class="rail-badge" aria-hidden="true"></span>' : ""}
-           </button>`
+           </button>`,
       )
       .join("");
 
@@ -365,7 +431,7 @@ window.Shell = (() => {
             <span><b>${q.symbol}</b><small>${q.cls}</small></span>
             <span style="text-align:right"><b>${fmt(q.price, q.dec)}</b>
             <small class="chg ${q.chg >= 0 ? "up" : "down"}">${pct(q.chg)}</small></span>
-          </div>`
+          </div>`,
         )
         .join("");
       return `<div class="rp-head"><h3>Watchlist</h3><span>${
@@ -379,7 +445,7 @@ window.Shell = (() => {
           (s) => `<div class="rp-row">
             <span>${s.name}<small>${s.window}</small></span>
             <span class="sess-chip ${s.open ? "on" : "off"}">${s.open ? "Open" : "Closed"}</span>
-          </div>`
+          </div>`,
         )
         .join("");
       return `<div class="rp-head"><h3>Session clock</h3><span id="rp-now"></span></div>${rows}
@@ -393,7 +459,7 @@ window.Shell = (() => {
         (e) => `<div class="rp-row">
           <span><b>${e.time}</b><small>${e.ccy} · ${e.title}</small></span>
           <span class="tag">${e.impact}</span>
-        </div>`
+        </div>`,
       ).join("");
       return `<div class="rp-head"><h3>Today</h3><span>times in UTC</span></div>${rows}
         <div class="rp-foot">Full calendar arrives with the Market context block.</div>`;
@@ -476,7 +542,7 @@ window.Shell = (() => {
         e.preventDefault();
         clearProfile();
         window.location.href = P.home;
-      })
+      }),
     );
   }
 
@@ -522,19 +588,88 @@ window.Shell = (() => {
       const first = sheet.querySelector("a, button");
       if (first) first.focus();
     });
-    $$("[data-close], .sheet-link", sheet).forEach((el) => el.addEventListener("click", closeSheet));
+    $$("[data-close], .sheet-link", sheet).forEach((el) =>
+      el.addEventListener("click", closeSheet),
+    );
   }
 
   /* ---------------------------------------------------------- search */
 
+  /* The market half of the search index is the real instrument table when the
+     page has loaded it, and the five demo quotes only as a fallback.
+
+     It was the five, everywhere. So a Ugandan trader typing "UGX" — or
+     "shilling", or "silver", or "DXY" — got "Nothing for that". Twenty-two of
+     the twenty-seven instruments this app trades were unsearchable from the
+     one search box on every page, and the pairs a project aimed at East
+     Africa exists to offer were among the missing.
+
+     `base` and `quote` go into the haystack so a currency code finds its
+     pairs: "UGX" reaches USDUGX even though the word does not appear in
+     "US dollar / Ugandan shilling". */
+  const MARKET_INDEX =
+    (window.Instruments && window.Instruments.INSTRUMENTS) || null
+      ? window.Instruments.INSTRUMENTS.map((i) => ({
+          group: "Markets",
+          label: i.symbol,
+          sub: i.name,
+          tag: i.market,
+          extra: `${i.base || ""} ${i.quote || ""}`,
+          href: P.markets,
+        }))
+      : QUOTES.map((q) => ({
+          group: "Markets",
+          label: q.symbol,
+          sub: q.name,
+          tag: q.cls,
+          extra: "",
+          href: P.markets,
+        }));
+
   const INDEX = [
-    ...QUOTES.map((q) => ({ group: "Markets", label: q.symbol, sub: q.name, tag: q.cls, href: P.markets })),
-    { group: "Tools", label: "Trading journal", sub: "Entry, exit, size, screenshot, emotion", tag: "Journal", href: P.journal },
-    { group: "Tools", label: "Position size calculator", sub: "Risk percent to lot size", tag: "Calculator", href: P.calculators },
-    { group: "Tools", label: "Pip value calculator", sub: "In your account currency", tag: "Calculator", href: P.calculators },
-    { group: "Tools", label: "Currency converter", sub: "Same rates as the market tables", tag: "Converter", href: P.calculators },
-    { group: "Lessons", label: "Risk of ruin", sub: "Why one percent survives a losing streak", tag: "Quiz-gated", href: P.learn },
-    { group: "Lessons", label: "Reading the economic calendar", sub: "High-impact events and spreads", tag: "Quiz-gated", href: P.learn },
+    ...MARKET_INDEX,
+    {
+      group: "Tools",
+      label: "Trading journal",
+      sub: "Entry, exit, size, screenshot, emotion",
+      tag: "Journal",
+      href: P.journal,
+    },
+    {
+      group: "Tools",
+      label: "Position size calculator",
+      sub: "Risk percent to lot size",
+      tag: "Calculator",
+      href: P.calculators,
+    },
+    {
+      group: "Tools",
+      label: "Pip value calculator",
+      sub: "In your account currency",
+      tag: "Calculator",
+      href: P.calculators,
+    },
+    {
+      group: "Tools",
+      label: "Currency converter",
+      sub: "Same rates as the market tables",
+      tag: "Converter",
+      href: P.calculators,
+    },
+    {
+      group: "Lessons",
+      label: "Risk of ruin",
+      sub: "Why one percent survives a losing streak",
+      tag: "Quiz-gated",
+      href: P.learn,
+    },
+    {
+      group: "Lessons",
+      label: "Reading the economic calendar",
+      sub: "High-impact events and spreads",
+      tag: "Quiz-gated",
+      href: P.learn,
+    },
   ];
 
   let active = -1;
@@ -558,8 +693,9 @@ window.Shell = (() => {
         (i) =>
           i.label.toLowerCase().includes(query) ||
           i.sub.toLowerCase().includes(query) ||
-          i.tag.toLowerCase().includes(query)
-      ).slice(0, 7);
+          i.tag.toLowerCase().includes(query) ||
+          (i.extra || "").toLowerCase().includes(query),
+      ).slice(0, 8);
 
       if (!hits.length) {
         panel.innerHTML = `<div class="sr-empty">Nothing for “${q}”. Try a symbol like EURUSD, or “risk”.</div>`;
@@ -591,7 +727,9 @@ window.Shell = (() => {
       if (!items.length) return;
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
-        active = (active + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+        active =
+          (active + (e.key === "ArrowDown" ? 1 : -1) + items.length) %
+          items.length;
         items.forEach((it, i) => {
           it.classList.toggle("active", i === active);
           it.setAttribute("aria-selected", String(i === active));
@@ -615,7 +753,10 @@ window.Shell = (() => {
       const dark = window.Theme.current() === "dark";
       btn.innerHTML = dark ? ICON.sun : ICON.moon;
       btn.dataset.tip = dark ? "Light theme" : "Dark theme";
-      btn.setAttribute("aria-label", "Switch to " + (dark ? "light" : "dark") + " theme");
+      btn.setAttribute(
+        "aria-label",
+        "Switch to " + (dark ? "light" : "dark") + " theme",
+      );
     }
 
     btn.addEventListener("click", (e) => {
@@ -668,7 +809,9 @@ window.Shell = (() => {
         /* keep the flyout next to its button and inside the viewport */
         const r = btn.getBoundingClientRect();
         const h = panel.offsetHeight;
-        panel.style.top = Math.min(window.innerHeight - h - 12, Math.max(12, r.top - 12)) + "px";
+        panel.style.top =
+          Math.min(window.innerHeight - h - 12, Math.max(12, r.top - 12)) +
+          "px";
 
         if (id === "sessions") {
           const tick = () => {
@@ -688,7 +831,7 @@ window.Shell = (() => {
             ev.preventDefault();
             clearProfile();
             window.location.href = P.home;
-          })
+          }),
         );
       });
     });
@@ -699,7 +842,8 @@ window.Shell = (() => {
   document.addEventListener("click", (e) => {
     if (!e.target.closest(".dd")) closeDropdowns();
     if (!e.target.closest(".nav-search")) closeSearch();
-    if (!e.target.closest(".rail") && !e.target.closest(".rail-panel")) closePanels(null);
+    if (!e.target.closest(".rail") && !e.target.closest(".rail-panel"))
+      closePanels(null);
   });
 
   document.addEventListener("keydown", (e) => {
