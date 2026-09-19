@@ -71,7 +71,11 @@
             <span id="eq-note">account currency</span>
           </div>
           <div class="panel-body">
-            <canvas id="equity" height="180" aria-label="Equity curve built from your logged trades"></canvas>
+            <div class="eq-wrap">
+              <canvas id="equity" height="180" aria-label="Equity curve built from your logged trades"></canvas>
+              <!-- hover readout: filled by dashboard.js, follows the cursor -->
+              <div class="eq-tip" id="eq-tip" hidden></div>
+            </div>
             <div class="eq-legend">
               <span><i class="dot brand"></i> balance after each closed trade</span>
               <span id="eq-dd"></span>
@@ -85,6 +89,24 @@
             <span>by setup</span>
           </div>
           <div class="panel-body" id="by-setup"></div>
+        </div>
+
+        <!-- the only forward-looking panel on the screen -->
+        <div class="panel span-2" id="panel-open" hidden>
+          <div class="panel-head">
+            <h2>On the table now</h2>
+            <span id="or-note">open positions</span>
+          </div>
+          <div class="panel-body" id="open-risk"></div>
+        </div>
+
+        <!-- diagnosis, not description: what to change tomorrow -->
+        <div class="panel span-2" id="panel-leaks">
+          <div class="panel-head">
+            <h2>What is costing you money</h2>
+            <span id="lk-note"></span>
+          </div>
+          <div class="panel-body" id="leaks"></div>
         </div>
 
         <div class="panel span-2">

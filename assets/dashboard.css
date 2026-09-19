@@ -384,3 +384,361 @@
     display: none;
   }
 }
+
+/* ------------------------------------------------------------ equity hover
+   The canvas sits in a relative wrapper so the readout can be positioned
+   over it in CSS pixels, which is the only coordinate space both the
+   canvas geometry and the DOM agree on. */
+
+.eq-wrap {
+  position: relative;
+}
+
+.eq-tip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  min-width: 118px;
+  padding: 7px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-s);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.eq-tip b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.eq-tip span {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.eq-tip span.up {
+  color: var(--up);
+}
+
+.eq-tip span.down {
+  color: var(--down);
+}
+
+.eq-tip small {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ------------------------------------------------------------ open risk */
+
+.or-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 18px;
+  align-items: center;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.or-fig span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.or-fig b {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.or-fig.hot b {
+  color: var(--down);
+}
+
+.or-fig small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.or-track {
+  height: 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.or-track i {
+  display: block;
+  height: 100%;
+  background: var(--brand);
+}
+
+.or-track i.hot {
+  background: var(--down);
+}
+
+.or-cap small {
+  display: block;
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.or-rows {
+  display: grid;
+  gap: 1px;
+}
+
+.or-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.or-row:last-child {
+  border-bottom: 0;
+}
+
+.or-sym {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.or-sym b {
+  font-size: 13.5px;
+}
+
+.or-sym small {
+  color: var(--muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.or-risk {
+  flex: 0 0 auto;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--down);
+}
+
+.or-risk small {
+  display: block;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ------------------------------------------------------------ leaks
+   Cards, not a table: each one is a sentence the user has to read, and a
+   table invites scanning past it. Rules carry a left edge in the loss
+   colour; patterns carry a neutral one, so the weight of the claim is
+   visible before a word of it is read. */
+
+.lk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 12px;
+}
+
+.lk {
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: var(--r-s);
+  background: var(--surface-2);
+}
+
+.lk.rule {
+  border-left-color: var(--down);
+}
+
+.lk-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.lk-tag {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.lk.rule .lk-tag {
+  color: var(--down);
+}
+
+.lk-cost {
+  flex: 0 0 auto;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--down);
+}
+
+.lk-cost.none {
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.lk-cost small {
+  display: block;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.lk b {
+  display: block;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.lk p {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.lk-conc {
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-s);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.lk-wins {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.lk-wins h3 {
+  margin: 0 0 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.lk-win {
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--up);
+  border-radius: var(--r-s);
+  background: var(--surface-2);
+}
+
+.lk-win + .lk-win {
+  margin-top: 8px;
+}
+
+.lk-win b {
+  display: block;
+  font-size: 13.5px;
+}
+
+.lk-win p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.lk-fine {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--faint);
+}
+
+@media (max-width: 680px) {
+  .or-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .lk-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* the label and its value each want a line of their own once the panel
+     is narrower than the sentence "open risk against your daily stop" */
+  .or-cap-top {
+    display: block;
+  }
+
+  .or-cap-top b {
+    display: block;
+    margin-top: 3px;
+    font-size: 14px;
+  }
+}
+
+.or-cap-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.or-cap-top span {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.or-cap-top b {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.or-cap-top b.hot {
+  color: var(--down);
+}
+
+/* cards keep their own height instead of stretching to the tallest in the row */
+.lk-grid {
+  align-items: start;
+}

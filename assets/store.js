@@ -280,6 +280,330 @@ window.Store = (() => {
   /* ---------------------------------------------------------- aggregates
      What the dashboard reads. Never recomputed on a page. */
 
+  /* ------------------------------------------------------------------ leaks
+     "What is costing you money."
+
+     Every other number on this site is descriptive: net P&L, expectancy,
+     win rate. None of them tell a trader what to *change*, and a dashboard
+     that only describes is a mirror, not a coach.
+
+     Two kinds of finding, kept deliberately separate because they carry
+     very different weight:
+
+     RULES are deterministic. A trade risked 8% against a 1% rule, or lost
+     1.8R against a 1R stop — that is not an inference, it happened, and the
+     cost is arithmetic. One occurrence is worth naming, so there is no
+     sample-size gate and the cost is exact.
+
+     PATTERNS are statistical. "New York is your worst session" is a claim
+     about the future made from a handful of trades, so it needs MIN_N
+     trades in the subset, MIN_TOTAL closed in the journal, and it is priced
+     against the rest of the journal rather than against zero. Every pattern
+     carries its sample size so the user can discount it.
+
+     Cost is given in R and in money. R is the honest unit; money is the one
+     that stings. One R is priced at the average money risked per trade,
+     which is the only defensible conversion when position sizes differ.
+     ------------------------------------------------------------------ */
+
+  const MIN_N = 3;
+  const MIN_TOTAL = 6;
+
+  const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+  function leaks(trades, settings) {
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    const all = (trades || []).slice();
+
+    /* one pass, oldest first, so the sequence rules below can look back */
+    const rows = all
+      .map((t) => ({ t, c: compute(t) }))
+      .filter((x) => !x.c.open && x.c.r !== null)
+      .sort((a, b) => String(a.t.date || "").localeCompare(String(b.t.date || "")));
+
+    const out = { closed: rows.length, enough: rows.length >= MIN_TOTAL, findings: [], wins: [] };
+    if (!rows.length) return out;
+
+    const avgRisk = rows.reduce((a, x) => a + Math.abs(x.c.riskMoney || 0), 0) / rows.length;
+    const rValue = avgRisk || (num(s.balance) * num(s.riskPct)) / 100 || 1;
+    out.rValue = rValue;
+    out.avgR = rows.reduce((a, x) => a + x.c.r, 0) / rows.length;
+
+    const ids = (list) => list.map((x) => x.t.id).sort().join("|");
+
+    /* --------------------------------------------------------- rules */
+
+    function rule(kind, title, list, costR, text) {
+      if (!list.length) return;
+      out.findings.push({
+        basis: "rule",
+        kind,
+        title,
+        text,
+        n: list.length,
+        costR,
+        costMoney: costR * rValue,
+        share: (list.length / rows.length) * 100,
+        key: ids(list),
+      });
+    }
+
+    /* 1 — sizing. The most expensive habit there is, and the one every
+       trader is certain they do not have. Priced as the risk taken beyond
+       the rule, because that is the exposure the rule existed to prevent. */
+    const cap = num(s.riskPct);
+    const ruleMoney = (num(s.balance) * cap) / 100;
+    const oversized = rows.filter((x) => x.c.riskPct !== null && x.c.riskPct > cap * 1.25);
+    if (oversized.length) {
+      const excess = oversized.reduce((a, x) => a + Math.max(0, Math.abs(x.c.riskMoney) - ruleMoney), 0);
+      const worst = oversized.reduce((a, x) => Math.max(a, x.c.riskPct), 0);
+      const realised = oversized.reduce((a, x) => a + x.c.netPL, 0);
+      rule(
+        "oversized",
+        oversized.length === 1 ? "One trade sized above your own rule" : oversized.length + " trades sized above your own rule",
+        oversized,
+        -(excess / rValue),
+        "Your rule is " + cap + "%; the worst of these risked " + worst.toFixed(2) +
+          "%. That is " + excess.toFixed(2) + " of exposure the rule existed to prevent, and those trades came to " +
+          realised.toFixed(2) + " between them. Size is the one variable you control completely before the market touches it."
+      );
+    }
+
+    /* 2 — the stop. A loss past 1R means it was moved, widened, or was
+       never really there. The excess is exact, so price that. */
+    const overrun = rows.filter((x) => x.c.r < -1.15);
+    if (overrun.length) {
+      const excessR = overrun.reduce((a, x) => a + (x.c.r + 1), 0);
+      rule(
+        "stopOverrun",
+        overrun.length === 1 ? "A loss bigger than the risk you planned" : overrun.length + " losses bigger than the risk you planned",
+        overrun,
+        excessR,
+        "These came in past 1.15R, which means the stop moved after the trade went live. The excess alone is " +
+          Math.abs(excessR).toFixed(2) + "R, or about " + Math.abs(excessR * rValue).toFixed(2) +
+          " — the cost of the decision, not of the setup."
+      );
+    }
+
+    /* 3 — no stop at all. No cost can be computed, which is the point. */
+    const noStop = rows.filter((x) => num(x.t.stop) === null);
+    rule(
+      "noStop",
+      noStop.length === 1 ? "A trade logged with no stop" : noStop.length + " trades logged with no stop",
+      noStop,
+      0,
+      "With no stop recorded there is no risk to measure, so these trades cannot be graded, sized or compared. " +
+        "They are also the ones that end accounts."
+    );
+
+    /* 4 — over-trading, against the user's own limit rather than an opinion */
+    const limit = num(s.maxTradesPerDay) || 0;
+    if (limit > 0) {
+      const perDay = new Map();
+      rows.forEach((x) => {
+        const k = String(x.t.date || "").slice(0, 10);
+        perDay.set(k, (perDay.get(k) || []).concat([x]));
+      });
+      const extra = [];
+      let busyDays = 0;
+      perDay.forEach((list) => {
+        if (list.length <= limit) return;
+        busyDays++;
+        /* only the trades past the limit — the first three were allowed */
+        extra.push.apply(extra, list.slice(limit));
+      });
+      if (extra.length) {
+        const costR = extra.reduce((a, x) => a + x.c.r, 0);
+        rule(
+          "overTrading",
+          extra.length + (extra.length === 1 ? " trade" : " trades") + " past your daily limit",
+          extra,
+          Math.min(0, costR),
+          "On " + busyDays + (busyDays === 1 ? " day" : " days") + " you went past your limit of " + limit +
+            " a day. Those extra entries came to " + costR.toFixed(2) + "R between them. The first trades of a day " +
+            "are the planned ones; the extras are the ones the day talks you into."
+        );
+      }
+    }
+
+    /* --------------------------------------------------------- patterns */
+
+    function versusRest(subset) {
+      if (!subset.length || subset.length === rows.length) return null;
+      const set = new Set(subset.map((x) => x.t.id));
+      const rest = rows.filter((x) => !set.has(x.t.id));
+      if (!rest.length) return null;
+      const mine = subset.reduce((a, x) => a + x.c.r, 0) / subset.length;
+      const theirs = rest.reduce((a, x) => a + x.c.r, 0) / rest.length;
+      return { n: subset.length, expR: mine, restR: theirs, gapR: mine - theirs, costR: (mine - theirs) * subset.length };
+    }
+
+    function pattern(kind, title, list, text) {
+      if (!out.enough || list.length < MIN_N) return;
+      const v = versusRest(list);
+      if (!v || v.gapR >= 0) return;
+      const key = ids(list);
+      /* two cuts over exactly the same trades are one finding said twice */
+      if (out.findings.some((f) => f.key === key)) return;
+      out.findings.push({
+        basis: "pattern",
+        kind,
+        title,
+        text,
+        n: v.n,
+        expR: v.expR,
+        restR: v.restR,
+        costR: v.costR,
+        costMoney: v.costR * rValue,
+        share: (v.n / rows.length) * 100,
+        key,
+      });
+    }
+
+    /* 5 — revenge entries: opened within 90 minutes of closing a loss.
+       Named plainly, because the euphemism is how the habit survives. */
+    const revenge = [];
+    rows.forEach((x, i) => {
+      if (!i) return;
+      const prev = rows[i - 1];
+      if (prev.c.netPL >= 0) return;
+      const a = new Date(prev.t.date).getTime();
+      const b = new Date(x.t.date).getTime();
+      if (Number.isFinite(a) && Number.isFinite(b) && b - a > 0 && b - a <= 90 * 60000) revenge.push(x);
+    });
+    pattern(
+      "revenge",
+      revenge.length + " entries taken straight after a loss",
+      revenge,
+      "Opened within ninety minutes of closing a loser. That is the most expensive ninety minutes in trading, " +
+        "and the journal is the only place it is visible."
+    );
+
+    /* 6 — the behavioural cuts: same machinery, different key */
+    const cuts = [
+      ["session", (t) => t.session, "session"],
+      ["emotion", (t) => t.emotion, "state of mind"],
+      ["setup", (t) => t.setup, "setup"],
+      ["weekday", (t) => { const d = new Date(t.date); return Number.isFinite(d.getTime()) ? WEEKDAYS[d.getDay()] : ""; }, "day"],
+      ["symbol", (t) => t.symbol, "instrument"],
+    ];
+
+    cuts.forEach(([kind, key, noun]) => {
+      const groups = new Map();
+      rows.forEach((x) => {
+        const k = key(x.t);
+        if (!k) return;
+        groups.set(k, (groups.get(k) || []).concat([x]));
+      });
+      if (groups.size < 2) return;
+
+      let worst = null;
+      groups.forEach((list, k) => {
+        if (list.length < MIN_N) return;
+        const v = versusRest(list);
+        if (!v) return;
+        if (!worst || v.costR < worst.v.costR) worst = { k, list, v };
+      });
+      if (!worst) return;
+
+      pattern(
+        kind,
+        "Your worst " + noun + ": " + worst.k,
+        worst.list,
+        worst.k + " runs at " + worst.v.expR.toFixed(2) + "R a trade against " + worst.v.restR.toFixed(2) +
+          "R everywhere else, over " + worst.v.n + " trades."
+      );
+    });
+
+    /* --------------------------------------------------------- the rest */
+
+    /* concentration: if three trades carry the whole result, the edge is
+       not proven — worth knowing, but it is not a habit to fix */
+    if (rows.length >= MIN_TOTAL) {
+      const byPL = rows.slice().sort((a, b) => a.c.netPL - b.c.netPL);
+      const worst3 = byPL.slice(0, 3);
+      const net = rows.reduce((a, x) => a + x.c.netPL, 0);
+      const without = net - worst3.reduce((a, x) => a + x.c.netPL, 0);
+      out.concentration = {
+        net,
+        withoutWorst3: without,
+        n: worst3.length,
+        gap: without - net,
+        text:
+          "Your three worst trades account for " + Math.abs(without - net).toFixed(2) +
+          ". Without them the period reads " + without.toFixed(2) + " instead of " + net.toFixed(2) + ".",
+      };
+    }
+
+    /* what is working — a screen that only lists faults gets closed once
+       and never opened again */
+    const best = [];
+    [["setup", (t) => t.setup, "setup"], ["session", (t) => t.session, "session"]].forEach(([kind, key, noun]) => {
+      const groups = new Map();
+      rows.forEach((x) => {
+        const k = key(x.t);
+        if (!k) return;
+        groups.set(k, (groups.get(k) || []).concat([x]));
+      });
+      let top = null;
+      groups.forEach((list, k) => {
+        if (list.length < MIN_N) return;
+        const v = versusRest(list);
+        if (!v || v.gapR <= 0) return;
+        if (!top || v.gapR > top.v.gapR) top = { k, v };
+      });
+      if (top && out.enough)
+        best.push({
+          kind,
+          title: "Your best " + noun + ": " + top.k,
+          text:
+            top.k + " runs at " + top.v.expR.toFixed(2) + "R against " + top.v.restR.toFixed(2) + "R elsewhere, over " +
+            top.v.n + " trades. That is the one to do more of.",
+          n: top.v.n,
+          expR: top.v.expR,
+        });
+    });
+    out.wins = best;
+
+    /* worst first, and a rule outranks a pattern at equal cost because it
+       is the one you can act on tomorrow without arguing about the sample */
+    out.findings.sort((a, b) => a.costR - b.costR || (a.basis === "rule" ? -1 : 1));
+    return out;
+  }
+
+  /* ------------------------------------------------------------- open risk
+     What is actually at stake right now. The stat cards are all history;
+     this is the only forward-looking number on the dashboard, and it is
+     the one that decides whether the next trade is allowed to exist. */
+
+  function openRisk(trades, settings) {
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    const balance = num(s.balance) || DEFAULT_SETTINGS.balance;
+
+    const open = (trades || [])
+      .map((t) => ({ t, c: compute(t) }))
+      .filter((x) => x.c.open);
+
+    let risk = 0;
+    let unknown = 0;
+    open.forEach((x) => {
+      if (x.c.riskMoney === null) unknown++;
+      else risk += Math.abs(x.c.riskMoney);
+    });
+
+    return {
+      n: open.length,
+      rows: open,
+      riskMoney: risk,
+      riskPct: balance ? (risk / balance) * 100 : null,
+      unknown,
+      /* three positions each risking the full rule is a three percent day
+         waiting to happen, so the cap is compared against the daily stop */
+      cap: num(s.maxDailyLossPct) || null,
+      over: num(s.maxDailyLossPct) > 0 && balance ? (risk / balance) * 100 > num(s.maxDailyLossPct) : false,
+    };
+  }
+
   function stats(trades, settings) {
     const closed = trades.filter((t) => !compute(t).open && compute(t).result !== "Open");
     const rows = closed.map((t) => compute(t));
@@ -534,6 +858,8 @@ window.Store = (() => {
     compute,
     discipline,
     guardrails,
+    leaks,
+    openRisk,
     stats,
     streak,
     uid,

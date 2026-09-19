@@ -123,6 +123,10 @@
 
   /* ------------------------------------------------------------ equity */
 
+  /* the last drawn geometry, so the hover handler can map a cursor x back
+     to a point without redrawing or recomputing anything */
+  let eq = null;
+
   function drawEquity(stats) {
     const cv = $("#equity");
     if (!cv) return;
@@ -138,6 +142,7 @@
 
     const pts = stats.curve;
     if (pts.length < 2) {
+      eq = null;
       g.fillStyle = css("--faint");
       g.font = "13px " + (css("--sans") || "sans-serif");
       g.textAlign = "center";
@@ -197,11 +202,81 @@
     g.fillStyle = colour;
     g.fill();
 
+    eq = { pts, x, y, w, h, colour, start };
+
     $("#eq-note").textContent = money(ending);
     $("#eq-dd").innerHTML =
       stats.maxDrawdownPct > 0.01
         ? `<span><i class="dot down"></i> max drawdown ${pct(stats.maxDrawdownPct, 1)}</span>`
         : "";
+  }
+
+  /* ------------------------------------------------------------ equity hover
+     A curve without values is decoration. Reading a balance off the shape of
+     a line is guesswork, so the cursor names the point: which trade, when,
+     the balance after it and the change it caused. Redraws the curve and
+     paints the crosshair on top, because canvas has no other way back. */
+
+  function eqHover(ev) {
+    if (!eq) return;
+    const cv = $("#equity");
+    const tip = $("#eq-tip");
+    const rect = cv.getBoundingClientRect();
+    const mx = ev.clientX - rect.left;
+
+    /* nearest point by x, not the one under the cursor — a 40-trade curve
+       has points closer together than a fingertip */
+    let best = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < eq.pts.length; i++) {
+      const d = Math.abs(eq.x(i) - mx);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    }
+
+    const p = eq.pts[best];
+    const prev = best ? eq.pts[best - 1] : null;
+    const px = eq.x(best);
+    const py = eq.y(p.equity);
+
+    drawEquity(Store.stats(filtered(), settings()));
+
+    const g = cv.getContext("2d");
+    g.strokeStyle = css("--line-strong");
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(px, 8);
+    g.lineTo(px, eq.h - 20);
+    g.stroke();
+    g.beginPath();
+    g.arc(px, py, 4.5, 0, Math.PI * 2);
+    g.fillStyle = eq.colour;
+    g.fill();
+    g.strokeStyle = css("--surface");
+    g.lineWidth = 2;
+    g.stroke();
+
+    const chg = prev ? p.equity - prev.equity : 0;
+    tip.innerHTML =
+      "<b>" + esc(money(p.equity)) + "</b>" +
+      (prev ? '<span class="' + dir(chg) + '">' + esc(money(chg, true)) + "</span>" : "<span>opening balance</span>") +
+      "<small>" + esc(p.t ? String(p.t).slice(0, 10) : "before the first trade") + "</small>";
+    tip.hidden = false;
+
+    /* keep the tip inside the panel rather than letting it clip */
+    const tw = tip.offsetWidth || 130;
+    let left = px - tw / 2;
+    left = Math.max(2, Math.min(left, eq.w - tw - 2));
+    tip.style.left = left + "px";
+    tip.style.top = Math.max(0, py - tip.offsetHeight - 12) + "px";
+  }
+
+  function eqLeave() {
+    const tip = $("#eq-tip");
+    if (tip) tip.hidden = true;
+    if (eq) drawEquity(Store.stats(filtered(), settings()));
   }
 
   /* ------------------------------------------------------------ by setup */
@@ -264,6 +339,136 @@
         </tr>`;
       })
       .join("");
+  }
+
+  /* ------------------------------------------------------------ open risk
+     The stat cards are all history. This is the only number on the screen
+     that is about the next hour: what is currently at risk if every open
+     stop is hit, against the daily loss rail. Three positions each risking
+     the full rule is a three percent day already in motion. */
+
+  function renderOpenRisk() {
+    const box = $("#open-risk");
+    const panel = $("#panel-open");
+    if (!box || !Store.openRisk) return;
+
+    const o = Store.openRisk(filtered(), settings());
+    panel.hidden = o.n === 0;
+    if (!o.n) return;
+
+    $("#or-note").textContent = o.n + (o.n === 1 ? " position open" : " positions open");
+
+    const cap = o.cap;
+    const hot = o.over;
+    const bar = cap ? Math.min(100, (o.riskPct / cap) * 100) : null;
+
+    box.innerHTML =
+      '<div class="or-head">' +
+      '<div class="or-fig' + (hot ? " hot" : "") + '">' +
+      "<span>At risk if every stop is hit</span><b>" + esc(money(-o.riskMoney)) + "</b>" +
+      "<small>" + esc(pct(o.riskPct, 2)) + " of the balance" +
+      (o.unknown ? " · " + o.unknown + " with no stop, not counted" : "") + "</small>" +
+      "</div>" +
+      (cap
+        ? '<div class="or-cap">' +
+          '<div class="or-cap-top"><span>Open risk against your daily stop</span><b class="' + (hot ? "hot" : "") + '">' +
+          esc(pct(o.riskPct, 2)) + " of " + cap + "%</b></div>" +
+          '<div class="or-track"><i class="' + (hot ? "hot" : "") + '" style="width:' + bar.toFixed(1) + '%"></i></div>' +
+          "<small>" + (hot
+            ? "You are past the daily stop before a single stop has been hit. Closing one of these is the only way back inside the rule."
+            : "There is " + pct(Math.max(0, cap - o.riskPct), 2) + " of room left before the day is over by your own rule.") +
+          "</small></div>"
+        : '<div class="or-cap"><small>No daily loss stop is set, so there is nothing to measure this against. ' +
+          'Settings has one, and it is the rail that makes this number mean something.</small></div>') +
+      "</div>" +
+      '<div class="or-rows">' +
+      o.rows
+        .map((x) => {
+          const t = x.t;
+          const c = x.c;
+          return '<div class="or-row">' +
+            '<span class="or-sym"><span class="side ' + (t.side === "Short" ? "short" : "long") + '">' + esc(t.side) +
+            "</span><b>" + esc(t.symbol) + "</b><small>" + esc(t.setup || "no setup") + "</small></span>" +
+            '<span class="or-risk">' + (c.riskMoney === null ? "no stop" : esc(bare(-Math.abs(c.riskMoney), true))) +
+            "<small>" + (c.riskPct === null ? "unmeasurable" : pct(c.riskPct, 2)) + "</small></span>" +
+            "</div>";
+        })
+        .join("") +
+      "</div>";
+  }
+
+  /* ------------------------------------------------------------ leaks
+     Store.leaks() does the diagnosis; this draws it, and the drawing has
+     one job the maths cannot do for it: make the difference between a rule
+     that was broken and a pattern that might be noise visible at a glance.
+     Rules get a hard label and an exact cost. Patterns get their sample
+     size printed next to the claim, every time, without exception. */
+
+  function renderLeaks() {
+    const box = $("#leaks");
+    if (!box || !Store.leaks) return;
+
+    const L = Store.leaks(filtered(), settings());
+
+    if (!L.closed) {
+      $("#lk-note").textContent = "";
+      box.innerHTML =
+        '<p class="muted-note">Nothing closed in this period, so there is nothing to diagnose. ' +
+        "This panel reads your own journal — it has no opinions of its own until you give it some.</p>";
+      return;
+    }
+
+    $("#lk-note").textContent = L.closed + " closed trades in view";
+
+    /* the small-sample state is a first-class state, not an error */
+    if (!L.enough && !L.findings.length) {
+      box.innerHTML =
+        '<p class="muted-note">' + L.closed + " closed trade" + (L.closed === 1 ? "" : "s") +
+        " is not enough to tell a leak from a run of bad luck. This panel starts naming patterns at 6, " +
+        "and it will flag a broken rule — an oversized trade, a stop that moved — from the first one.</p>";
+      return;
+    }
+
+    const cost = (f) =>
+      f.costR === 0
+        ? '<span class="lk-cost none">not measurable</span>'
+        : '<span class="lk-cost">' + esc(money(f.costMoney)) + "<small>" + esc(rfmt(f.costR)) + "</small></span>";
+
+    const cards = L.findings
+      .slice(0, 5)
+      .map(
+        (f) =>
+          '<div class="lk ' + f.basis + '">' +
+          '<div class="lk-top"><span class="lk-tag">' + (f.basis === "rule" ? "Rule broken" : "Pattern · " + f.n + " trades") +
+          "</span>" + cost(f) + "</div>" +
+          "<b>" + esc(f.title) + "</b><p>" + esc(f.text) + "</p>" +
+          "</div>"
+      )
+      .join("");
+
+    const wins = L.wins.length
+      ? '<div class="lk-wins"><h3>And what is working</h3>' +
+        L.wins.map((w) => "<div class=\"lk-win\"><b>" + esc(w.title) + "</b><p>" + esc(w.text) + "</p></div>").join("") +
+        "</div>"
+      : "";
+
+    const conc = L.concentration
+      ? '<p class="lk-conc">' + esc(L.concentration.text) +
+        (L.concentration.gap > 0
+          ? " A period carried by a handful of trades is not a proven edge yet, in either direction."
+          : "") +
+        "</p>"
+      : "";
+
+    box.innerHTML =
+      (cards
+        ? '<div class="lk-grid">' + cards + "</div>"
+        : '<p class="muted-note">No broken rules and no losing pattern big enough to name, across ' +
+          L.closed + " closed trades. That is the result this panel is built to be able to say.</p>") +
+      conc +
+      wins +
+      '<p class="lk-fine">Costs are measured against the rest of your journal, not against zero, and one R is priced at ' +
+      esc(money(L.rValue)) + " — your own average risk per trade.</p>";
   }
 
   /* ------------------------------------------------------------ greeting */
@@ -397,6 +602,8 @@
     if (hasAny) {
       drawEquity(stats);
       renderBySetup(trades);
+      renderOpenRisk();
+      renderLeaks();
       renderRecent(trades);
     }
 
@@ -421,6 +628,19 @@
       state.account = e.target.value;
       render();
     });
+
+    const cv = $("#equity");
+    if (cv) {
+      cv.addEventListener("mousemove", eqHover);
+      cv.addEventListener("mouseleave", eqLeave);
+      /* touch: a tap reads the nearest point and leaves it up */
+      cv.addEventListener("touchstart", (e) => {
+        if (e.touches && e.touches[0]) eqHover(e.touches[0]);
+      }, { passive: true });
+      cv.addEventListener("touchmove", (e) => {
+        if (e.touches && e.touches[0]) eqHover(e.touches[0]);
+      }, { passive: true });
+    }
 
     window.addEventListener("storechange", render);
     window.addEventListener("themechange", () => {
