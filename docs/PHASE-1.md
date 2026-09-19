@@ -430,7 +430,21 @@ into the score would silently rewrite every past trade's grade.
 
 ---
 
-## 3f. Added beyond the original plan: the charts page
+## 3f. Learn: the path, gates and library
+
+The Learn module adds twenty-four ordered lessons across four blocks, with
+lessons unlocked in sequence and an 80% quiz gate between blocks. Each gate
+allows two attempts followed by a 30-minute cooldown, and missed questions
+link back to the lesson that explains them. Progress, notes, quiz results and
+the five-box review deck persist through `Store.learn`.
+
+The page also provides market-filtered worked examples, apply links into the
+product, generated Markdown/CSV resources, a searchable glossary, and deep
+links for the path, library, glossary, lessons and quizzes. The shared shell
+loads the curriculum before indexing search results so these entries are
+available from every page.
+
+## 3g. Added beyond the original plan: the charts page
 
 The PDF asked for a chart with indicators, drawing tools and a watchlist. What
 shipped is that, plus the four things below — each because the chart is where a

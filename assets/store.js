@@ -27,7 +27,7 @@ window.Store = (() => {
   "use strict";
 
   const NS = "onepercent:";
-  const SINGLETONS = { settings: true, profile: true, draft: true };
+  const SINGLETONS = { settings: true, profile: true, draft: true, learn: true };
 
   /* ---------------------------------------------------------- defaults */
 
@@ -915,6 +915,127 @@ window.Store = (() => {
       clear() {
         driver.clear("trades");
         emit("trades");
+      },
+    },
+
+    /* ------------------------------------------------------------ learn
+       Lesson progress, quiz results and the missed-question review deck.
+       Content lives in assets/lessons.js and gating lives in learn.js —
+       this only persists what the user did, through the same driver as
+       everything else, so a rest driver later needs no screen changes.
+
+       Shape:
+         read     { lessonId: ISO timestamp of first completion }
+         notes    { lessonId: the user's own note on that lesson }
+         quizzes  { blockId: { passed, best, attempts, lastAt, missed[] } }
+         review   { questionId: { box, due, seen, lapses } }  Leitner boxes
+         last     the lesson to resume at */
+    learn: {
+      get() {
+        const raw = driver.get("learn") || {};
+        return {
+          read: raw.read || {},
+          notes: raw.notes || {},
+          quizzes: raw.quizzes || {},
+          review: raw.review || {},
+          last: raw.last || "",
+          startedAt: raw.startedAt || "",
+        };
+      },
+
+      /* Completing a lesson is idempotent: the first timestamp is kept, so
+         re-reading a lesson never inflates the activity record. */
+      markRead(lessonId) {
+        const cur = api.learn.get();
+        if (!cur.read[lessonId]) cur.read[lessonId] = new Date().toISOString();
+        cur.last = lessonId;
+        if (!cur.startedAt) cur.startedAt = new Date().toISOString();
+        driver.patch("learn", cur);
+        emit("learn");
+        return cur;
+      },
+
+      unread(lessonId) {
+        const cur = api.learn.get();
+        delete cur.read[lessonId];
+        driver.patch("learn", cur);
+        emit("learn");
+        return cur;
+      },
+
+      seen(lessonId) {
+        const cur = api.learn.get();
+        cur.last = lessonId;
+        if (!cur.startedAt) cur.startedAt = new Date().toISOString();
+        driver.patch("learn", cur);
+        return cur;
+      },
+
+      note(lessonId, text) {
+        const cur = api.learn.get();
+        if (text && String(text).trim()) cur.notes[lessonId] = String(text);
+        else delete cur.notes[lessonId];
+        driver.patch("learn", cur);
+        emit("learn");
+        return cur;
+      },
+
+      /* A quiz result. `best` never goes down and `passed` never goes back
+         to false — a gate that reopens because of a later practice attempt
+         would punish revision, which is the opposite of the intent. */
+      recordQuiz(blockId, result) {
+        const cur = api.learn.get();
+        const prev = cur.quizzes[blockId] || { passed: false, best: 0, attempts: 0 };
+        const pct = num(result.pct) || 0;
+        cur.quizzes[blockId] = {
+          passed: prev.passed || !!result.passed,
+          best: Math.max(num(prev.best) || 0, pct),
+          last: pct,
+          attempts: (num(prev.attempts) || 0) + 1,
+          lastAt: new Date().toISOString(),
+          missed: Array.isArray(result.missed) ? result.missed : [],
+        };
+        driver.patch("learn", cur);
+        emit("learn");
+        return cur.quizzes[blockId];
+      },
+
+      /* Spaced repetition over the questions you got wrong. Five Leitner
+         boxes, doubling intervals: a question answered correctly moves up
+         a box, a lapse drops it to box 1. Cheap, and it is the difference
+         between passing a gate and remembering a month later. */
+      schedule(questionId, correctly) {
+        const DAYS = [0, 1, 3, 7, 21];
+        const cur = api.learn.get();
+        const prev = cur.review[questionId] || { box: 0, lapses: 0, seen: 0 };
+        const box = correctly ? Math.min(4, (num(prev.box) || 0) + 1) : 0;
+        const due = new Date(Date.now() + DAYS[box] * 86400000).toISOString();
+        cur.review[questionId] = {
+          box,
+          due,
+          seen: (num(prev.seen) || 0) + 1,
+          lapses: (num(prev.lapses) || 0) + (correctly ? 0 : 1),
+          retired: box >= 4,
+        };
+        driver.patch("learn", cur);
+        emit("learn");
+        return cur.review[questionId];
+      },
+
+      /* Questions due for review now, oldest due first. */
+      due(limit) {
+        const review = api.learn.get().review;
+        const now = Date.now();
+        return Object.keys(review)
+          .filter((id) => !review[id].retired && new Date(review[id].due).getTime() <= now)
+          .sort((a, b) => new Date(review[a].due) - new Date(review[b].due))
+          .slice(0, limit || 20);
+      },
+
+      clear() {
+        driver.clear("learn");
+        emit("learn");
+        return api.learn.get();
       },
     },
 

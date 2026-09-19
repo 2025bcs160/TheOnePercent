@@ -543,7 +543,7 @@
     }
 
     const units = lots * inst.contract;
-    const perPipAcct = toAcct(I.pipValuePerLot(inst) * lots, inst, inst.price);
+    const perPipAcct = toAcct(I.pipValuePerLot(inst) * lots, inst, entry);
     /* the spread is already paid the moment you enter; fees are the round trip */
     const spreadCost = perPipAcct === null ? null : perPipAcct * spread;
     const totalCost = spreadCost === null ? null : spreadCost + fees;

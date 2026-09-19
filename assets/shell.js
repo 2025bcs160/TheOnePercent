@@ -188,11 +188,14 @@ window.Shell = (() => {
     ["Commodities", "metals"],
   ];
 
+  /* label, href — "#" stays for the parts of Phase 1 that are not built
+     yet, so nothing pretends to be a working link */
   const MORE_LINKS = [
-    "Economic calendar",
-    "News & sentiment",
-    "Discipline leaderboard",
-    "Resource library",
+    ["Economic calendar", "#"],
+    ["News & sentiment", "#"],
+    ["Discipline leaderboard", "#"],
+    ["Resource library", P.learn + "#library"],
+    ["Glossary", P.learn + "#glossary"],
   ];
 
   function navHTML() {
@@ -206,7 +209,7 @@ window.Shell = (() => {
         `<a href="${P.markets}">${label} <small>${sub}</small></a>`,
     ).join("");
 
-    const more = MORE_LINKS.map((l) => `<a href="#">${l}</a>`).join("");
+    const more = MORE_LINKS.map(([l, href]) => `<a href="${href}">${l}</a>`).join("");
 
     const actions = authed
       ? `<div class="dd">
@@ -271,9 +274,7 @@ window.Shell = (() => {
     const markets = MARKET_LINKS.map(
       ([label]) => `<a class="sheet-link" href="${P.markets}">${label}</a>`,
     ).join("");
-    const more = MORE_LINKS.map(
-      (l) => `<a class="sheet-link" href="#">${l}</a>`,
-    ).join("");
+    const more = MORE_LINKS.map(([l, href]) => `<a class="sheet-link" href="${href}">${l}</a>`).join("");
 
     const cta = authed
       ? `<a class="btn btn-quiet" href="${P.settings}">Settings</a>
@@ -628,48 +629,41 @@ window.Shell = (() => {
 
   const INDEX = [
     ...MARKET_INDEX,
-    {
-      group: "Tools",
-      label: "Trading journal",
-      sub: "Entry, exit, size, screenshot, emotion",
-      tag: "Journal",
-      href: P.journal,
-    },
-    {
-      group: "Tools",
-      label: "Position size calculator",
-      sub: "Risk percent to lot size",
-      tag: "Calculator",
-      href: P.calculators,
-    },
-    {
-      group: "Tools",
-      label: "Pip value calculator",
-      sub: "In your account currency",
-      tag: "Calculator",
-      href: P.calculators,
-    },
-    {
-      group: "Tools",
-      label: "Currency converter",
-      sub: "Same rates as the market tables",
-      tag: "Converter",
-      href: P.calculators,
-    },
-    {
-      group: "Lessons",
-      label: "Risk of ruin",
-      sub: "Why one percent survives a losing streak",
-      tag: "Quiz-gated",
-      href: P.learn,
-    },
-    {
-      group: "Lessons",
-      label: "Reading the economic calendar",
-      sub: "High-impact events and spreads",
-      tag: "Quiz-gated",
-      href: P.learn,
-    },
+    { group: "Tools", label: "Trading journal", sub: "Entry, exit, size, screenshot, emotion", tag: "Journal", href: P.journal },
+    { group: "Tools", label: "Position size calculator", sub: "Risk percent to lot size", tag: "Calculator", href: P.calculators },
+    { group: "Tools", label: "Pip value calculator", sub: "In your account currency", tag: "Calculator", href: P.calculators },
+    { group: "Tools", label: "Currency converter", sub: "Same rates as the market tables", tag: "Converter", href: P.calculators },
+    /* Lessons come from the curriculum itself rather than two hardcoded
+       rows, so search can never advertise a lesson that no longer exists.
+       The glossary is searchable too — looking up "expectancy" is the most
+       likely reason anyone types a word into this box. */
+    ...(window.Curriculum
+      ? window.Curriculum.lessons.map((l) => ({
+          group: "Lessons",
+          label: l.title,
+          sub: l.summary,
+          tag: (window.Curriculum.block(l.block) || {}).level || "Lesson",
+          href: P.learn + "#lesson/" + l.id,
+        }))
+      : []),
+    ...(window.Curriculum
+      ? Object.keys(window.Curriculum.glossary).map((t) => ({
+          group: "Glossary",
+          label: t,
+          sub: window.Curriculum.glossary[t],
+          tag: "Definition",
+          href: P.learn + "#glossary",
+        }))
+      : []),
+    ...(window.Curriculum
+      ? window.Curriculum.resources.map((r) => ({
+          group: "Library",
+          label: r.title,
+          sub: r.blurb,
+          tag: r.kind,
+          href: P.learn + "#library",
+        }))
+      : []),
   ];
 
   let active = -1;
