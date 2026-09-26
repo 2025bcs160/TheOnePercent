@@ -688,5 +688,26 @@ window.AcademyUI = (() => {
     } else route(h);
   });
 
+  /* real-chart screenshots open full size; any click or Escape closes */
+  document.addEventListener("click", (e) => {
+    const s = e.target.closest && e.target.closest("[data-shot]");
+    if (!s) return;
+    const img = s.querySelector("img");
+    const box = document.createElement("div");
+    box.className = "shot-box";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-label", img ? img.alt : "Chart");
+    box.innerHTML = '<img src="' + s.dataset.shot + '" alt="">';
+    const close = () => {
+      box.remove();
+      document.removeEventListener("keydown", onKey);
+      s.focus();
+    };
+    const onKey = (k) => k.key === "Escape" && close();
+    box.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(box);
+  });
+
   return { route };
 })();
