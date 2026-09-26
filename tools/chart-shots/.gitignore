@@ -1,0 +1,13 @@
+__pycache__/
+*.png
+# Only the CSVs used by specs.py are committed; other downloads stay local.
+data/*
+!data/EURUSD_1D.csv
+!data/EURUSD_1H.csv
+!data/EURUSD_4H.csv
+!data/AUDUSD_1D.csv
+!data/GBPUSD_1D.csv
+!data/XAUUSD_1D.csv
+!data/XAUUSD_4H.csv
+!data/BTCUSD_1D.csv
+.tmp.*

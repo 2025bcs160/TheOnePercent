@@ -432,6 +432,18 @@ window.Academy = (() => {
       ["21 Candlesticks Every Trader Should Know", "Melvin Pasternak", "A compact guide to the core patterns."],
       ["Profitable Candlestick Trading", "Stephen W. Bigalow", "Pattern reliability and how to confirm signals."],
     ],
+    "support-resistance": [
+      ["Technical Analysis of the Financial Markets", "John J. Murphy", "The chapters on support, resistance and role reversal are the standard reference."],
+      ["Trading Price Action Trends", "Al Brooks", "Bar-by-bar reading of breakouts, failed breakouts and pullbacks."],
+    ],
+    "day-trading": [
+      ["Secrets of a Pivot Boss", "Frank O. Ochoa", "Floor pivots and the central pivot range explained in depth."],
+      ["Day Trading and Swing Trading the Currency Market", "Kathy Lien", "Session behaviour and news-driven setups in forex."],
+    ],
+    "trading-foundations": [
+      ["Currency Trading For Dummies", "Kathleen Brooks and Brian Dolan", "A plain-language introduction to quotes, pips, lots and leverage."],
+      ["The Essentials of Trading", "John Forman", "From the basic mechanics to a first trading plan."],
+    ],
     "risk-management": [
       ["The Essentials of Trading", "John Forman", "Risk, money management and building a trading plan."],
       ["The New Market Wizards", "Jack D. Schwager", "Interviews with top traders; risk control comes up in almost every one."],
@@ -481,8 +493,8 @@ window.Academy = (() => {
   const lessonCount = (c) => (c.content ? c.content.lessons.length : c.syllabus.reduce((a, m) => a + m.lessons.length, 0));
 
   /* flagship order for the "Start here" row */
-  const featured = ["candlesticks", "market-structure", "risk-management", "psychology"];
-  const deeper = ["supply-demand", "liquidity", "order-blocks"];
+  const featured = ["trading-foundations", "candlesticks", "support-resistance", "market-structure", "risk-management", "psychology", "day-trading", "supply-demand"];
+  const deeper = ["liquidity", "order-blocks", "fvg"];
 
   return { BRAND, PASS_MARK, schools, courses, course, school, register, isLive, lessonCount, featured, deeper, pdfs, PDFS, reading };
 })();
