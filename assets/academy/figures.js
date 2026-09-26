@@ -121,9 +121,16 @@ window.Figures = (() => {
     const n = bars.length;
     const ov = spec.overlays || [];
 
-    let lo = Math.min(...bars.map((b) => b.l));
-    let hi = Math.max(...bars.map((b) => b.h));
+    /* spec.only: draw just the hand-set candles (anatomy diagrams) */
+    const onlySet = spec.only ? new Set((spec.set || []).map((s) => s[0])) : null;
+    const shown = onlySet ? bars.filter((_, i) => onlySet.has(i)) : bars;
+    let lo = Math.min(...shown.map((b) => b.l));
+    let hi = Math.max(...shown.map((b) => b.h));
     ov.forEach((o) => {
+      if (o.at && o.label) {
+        lo = Math.min(lo, o.at[1]);
+        hi = Math.max(hi, o.at[1]);
+      }
       if (o.zone) {
         lo = Math.min(lo, o.zone[2]);
         hi = Math.max(hi, o.zone[3]);
@@ -167,6 +174,7 @@ window.Figures = (() => {
 
     /* candles */
     bars.forEach((b, i) => {
+      if (onlySet && !onlySet.has(i)) return;
       const up = b.c >= b.o;
       const c = up ? COLOR.up : COLOR.down;
       const x = X(i);
@@ -324,7 +332,22 @@ window.Figures = (() => {
     const rows = Math.ceil(n / perRow);
     const gap = 26;
     const bw = (W - 20 - gap * (perRow - 1)) / perRow;
-    const bh = 64;
+    /* wrap every step first, so all boxes share the height of the tallest */
+    const maxCh = Math.max(8, Math.floor((bw - 22) / 6.7));
+    const wrapped = steps.map((s) => {
+      const lines = [];
+      let cur = "";
+      String(s).split(" ").forEach((w) => {
+        if (cur && (cur + " " + w).length > maxCh) {
+          lines.push(cur);
+          cur = w;
+        } else cur = cur ? cur + " " + w : w;
+      });
+      if (cur) lines.push(cur);
+      return lines;
+    });
+    const maxLines = Math.max(...wrapped.map((l) => l.length));
+    const bh = 34 + maxLines * 15 + 6;
     const H = rows * (bh + 30) + 10;
     const out = [];
     steps.forEach((s, i) => {
@@ -334,17 +357,7 @@ window.Figures = (() => {
       const y = 10 + r * (bh + 30);
       out.push('<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + bh + '" rx="10" fill="var(--surface-2)" stroke="var(--line-strong)"/>');
       out.push('<text x="' + (x + 12) + '" y="' + (y + 20) + '" class="fg-t fg-b" fill="var(--brand)">' + String(i + 1).padStart(2, "0") + "</text>");
-      const words = String(s).split(" ");
-      let lineTxt = "";
-      const lines = [];
-      words.forEach((w) => {
-        if ((lineTxt + " " + w).trim().length > Math.floor(bw / 7.4)) {
-          lines.push(lineTxt.trim());
-          lineTxt = w;
-        } else lineTxt += " " + w;
-      });
-      lines.push(lineTxt.trim());
-      lines.slice(0, 2).forEach((l, k) =>
+      wrapped[i].forEach((l, k) =>
         out.push('<text x="' + (x + 12) + '" y="' + (y + 40 + k * 15) + '" class="fg-t" fill="var(--ink)">' + esc(l) + "</text>")
       );
       if (c < perRow - 1 && i < n - 1) {
@@ -356,6 +369,7 @@ window.Figures = (() => {
     });
     return '<svg viewBox="0 0 ' + W + " " + H + '" class="fg" role="img" aria-label="' + esc(spec.alt || "Process diagram") + '">' + out.join("") + "</svg>";
   }
+
 
   function render(spec) {
     if (!spec) return "";

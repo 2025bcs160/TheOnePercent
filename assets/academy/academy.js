@@ -166,8 +166,10 @@ window.AcademyUI = (() => {
           mine.map((c) => card(c, s)).join("") +
           "</div></section>"
         : "") +
-      '<section class="ac-sec"><div class="ac-sec-head"><h2>Start here</h2><span>The four full masterclasses every ' + esc(A.BRAND) + " trader takes first</span></div>" +
+      '<section class="ac-sec"><div class="ac-sec-head"><h2>Start here</h2><span>The core masterclasses every ' + esc(A.BRAND) + " trader takes first</span></div>" +
       '<div class="ac-grid feat">' + A.featured.map((id) => card(A.course(id), s, true)).join("") + "</div></section>" +
+      '<section class="ac-sec"><div class="ac-sec-head"><h2>Then go deeper</h2><span>Full masterclasses on how price is delivered</span></div>' +
+      '<div class="ac-grid feat">' + A.deeper.map((id) => card(A.course(id), s, true)).join("") + "</div></section>" +
       '<section class="ac-sec" id="ac-all"><div class="ac-sec-head"><h2>All masterclasses</h2><span id="ac-count"></span></div>' +
       '<div class="ac-filters">' +
       '<label class="fld ac-find"><span>Search courses</span><input id="ac-q" type="search" placeholder="liquidity, order blocks, gold…" value="' + esc(filters.q) + '"></label>' +
@@ -300,8 +302,9 @@ window.AcademyUI = (() => {
       '<section class="panel"><div class="panel-head"><h2>What you will learn</h2></div><div class="panel-body"><ul class="ac-outcomes">' +
       outcomes.map((o) => "<li>" + esc(o) + "</li>").join("") +
       "</ul></div></section>" +
-      (!live ? '<div class="notice ac-soon"><b>Lessons in production.</b> <small>The syllabus below is final. Enroll now to keep your place. While you wait, the full <a href="#mc/market-structure">Market Structure</a>, <a href="#mc/supply-demand">Supply &amp; Demand</a>, <a href="#mc/liquidity">Liquidity</a> and <a href="#mc/psychology">Trading Psychology</a> masterclasses are ready.</small></div>' : "") +
+      (!live ? '<div class="notice ac-soon"><b>Lessons in production.</b> <small>The syllabus below is final. Enroll now to keep your place. While you wait, these full masterclasses are ready: ' + A.courses.filter(A.isLive).map((x) => '<a href="#mc/' + x.id + '">' + esc(x.title.replace(/ Masterclass$/, "")) + "</a>").join(", ") + ".</small></div>" : "") +
       '<section class="ac-syllabus"><h2>Syllabus</h2>' + syllabus + quizRow + "</section>" +
+      pdfPanel(c, enrolled) +
       "</div>" +
       '<aside class="ac-side">' +
       '<div class="side-card"><h3>This course includes</h3><ul class="ac-inc">' +
@@ -309,6 +312,7 @@ window.AcademyUI = (() => {
       (live ? "<li>Key takeaways and common mistakes in every lesson</li><li>A psychology check and a practice task per lesson</li><li>Links into the " + esc(A.BRAND) + " journal, charts and calculators</li><li>" + c.content.quiz.length + "-question final quiz</li><li>" + esc(A.BRAND) + " certificate of completion</li>" : "<li>Final quiz and certificate on release</li>") +
       "</ul></div>" +
       (enrolled ? '<div class="side-card"><h3>Enrolment</h3><p class="hint">Enrolled ' + new Date(s.enrolled[c.id]).toLocaleDateString() + '.</p><button class="btn btn-quiet sm" id="ac-leave">Leave this course</button></div>' : "") +
+      readingCard(c) +
       (related.length ? '<div class="side-card"><h3>More in ' + esc(sc.title) + '</h3><ul class="ac-rel">' + related.map((r) => '<li><a href="#mc/' + r.id + '">' + esc(r.title) + "</a><small>" + esc(r.level) + " · " + A.lessonCount(r) + " lessons</small></li>").join("") + "</ul></div>" : "") +
       "</aside></div>";
 
@@ -321,6 +325,141 @@ window.AcademyUI = (() => {
       });
     const sl = $("[data-school-link]");
     if (sl) sl.addEventListener("click", () => (filters.school = sl.dataset.schoolLink));
+  }
+
+  /* ---------------------------------------------------------------- pdfs */
+
+  const PDF_ICON =
+    '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>';
+
+  function pdfPanel(c, enrolled) {
+    const list = A.pdfs(c.id);
+    if (!list.length) return "";
+    return (
+      '<section class="ac-pdfs"><h2>Course PDFs</h2><p class="hint">Original ' + esc(A.BRAND) + " study material for this masterclass. Read it online here or download it to study offline.</p>" +
+      list
+        .map(
+          (d) =>
+            '<div class="ac-pdf-row"><span class="ac-pdf-ic">' + PDF_ICON + "</span>" +
+            '<div class="ac-pdf-tx"><b>' + esc(d.title) + '</b><small>' + esc(d.kind) + (d.pages ? " · " + d.pages + " pages" : "") + "</small><p>" + esc(d.desc) + "</p></div>" +
+            '<div class="ac-pdf-act">' +
+            (enrolled
+              ? '<a class="btn btn-primary sm" href="#mc/' + c.id + "/read/" + d.id + '">Read online</a><a class="btn btn-quiet sm" href="' + d.file + '" download>Download</a>'
+              : '<button class="btn btn-primary sm" data-enroll="' + c.id + '" data-then="stay">Enroll to read</button>') +
+            "</div></div>"
+        )
+        .join("") +
+      "</section>"
+    );
+  }
+
+  function readingCard(c) {
+    const r = A.reading(c.id);
+    if (!r.length) return "";
+    return (
+      '<div class="side-card"><h3>Further reading</h3><ul class="ac-rel">' +
+      r.map((b) => "<li><b>" + esc(b.title) + "</b><small>" + esc(b.author) + " · " + esc(b.why) + "</small></li>").join("") +
+      '</ul><p class="hint">Published books, recommended to buy or borrow.</p></div>'
+    );
+  }
+
+  /* PDF.js renders pages to canvas so the reader looks the same on every
+     device (iOS Safari shows only the first page of an iframed PDF). If the
+     library cannot load, the browser's own viewer is used instead. */
+  const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+  let pdfjsReady = null;
+  let readerScroll = null;
+  function loadPdfjs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    if (pdfjsReady) return pdfjsReady;
+    pdfjsReady = new Promise((res, rej) => {
+      const sc = document.createElement("script");
+      sc.src = PDFJS + "pdf.min.js";
+      sc.onload = () => {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+        res(window.pdfjsLib);
+      };
+      sc.onerror = () => {
+        pdfjsReady = null;
+        rej(new Error("pdf.js failed to load"));
+      };
+      document.head.appendChild(sc);
+    });
+    return pdfjsReady;
+  }
+
+  function renderReader(c, pid) {
+    const d = A.pdfs(c.id).find((x) => x.id === pid);
+    if (!d) return renderCourse(c);
+    if (!st().enrolled[c.id]) return gate(c, "Enroll to read the " + d.kind.toLowerCase());
+    const others = A.pdfs(c.id).filter((x) => x.id !== pid);
+    root().innerHTML =
+      '<div class="crumb"><a href="#masterclasses">Masterclasses</a><span>/</span><a href="#mc/' + c.id + '">' + esc(c.title) + "</a><span>/</span><span>" + esc(d.kind) + "</span></div>" +
+      '<div class="ac-reader-head"><div><h1>' + esc(d.title) + '</h1><p class="lead">' + esc(d.desc) + "</p></div>" +
+      '<div class="ac-reader-act"><a class="btn btn-quiet sm" href="' + d.file + '" download>Download PDF</a><a class="btn btn-quiet sm" href="' + d.file + '" target="_blank" rel="noopener">Open in new tab</a></div></div>' +
+      '<div class="ac-reader-bar"><span id="ac-pg">Loading…</span><span class="ac-zoom"><button class="btn btn-quiet sm" data-z="-1" aria-label="Zoom out">−</button><button class="btn btn-quiet sm" data-z="0">Fit</button><button class="btn btn-quiet sm" data-z="1" aria-label="Zoom in">+</button></span></div>' +
+      '<div class="ac-reader" id="ac-reader" tabindex="0" aria-label="' + esc(d.title) + '"><div class="ac-reader-sk"></div><div class="ac-reader-sk"></div></div>' +
+      (others.length ? '<div class="ac-reader-more">Also in this course: ' + others.map((o) => '<a href="#mc/' + c.id + "/read/" + o.id + '">' + esc(o.title) + "</a>").join(" · ") + "</div>" : "") +
+      '<div class="ac-reader-foot"><a class="btn btn-primary" href="#mc/' + c.id + '">Back to the course</a></div>';
+
+    const box = $("#ac-reader");
+    const pg = $("#ac-pg");
+    let doc = null;
+    let zoom = 1;
+
+    const draw = async () => {
+      const token = (box.dataset.t = String(Math.random()));
+      box.innerHTML = "";
+      const width = Math.min(box.clientWidth - 24, 980) * zoom;
+      for (let i = 1; i <= doc.numPages; i++) {
+        if (box.dataset.t !== token) return;
+        const page = await doc.getPage(i);
+        const v1 = page.getViewport({ scale: 1 });
+        const scale = width / v1.width;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const vp = page.getViewport({ scale: scale * dpr });
+        const cv = document.createElement("canvas");
+        cv.width = vp.width;
+        cv.height = vp.height;
+        cv.style.width = Math.round(vp.width / dpr) + "px";
+        cv.className = "ac-page";
+        cv.setAttribute("aria-label", "Page " + i);
+        box.appendChild(cv);
+        await page.render({ canvasContext: cv.getContext("2d"), viewport: vp }).promise;
+      }
+    };
+    const onScroll = () => {
+      if (!doc) return;
+      const pages = box.querySelectorAll(".ac-page");
+      let cur = 1;
+      pages.forEach((p, i) => {
+        if (p.getBoundingClientRect().top < window.innerHeight * 0.4) cur = i + 1;
+      });
+      pg.textContent = "Page " + cur + " of " + doc.numPages;
+    };
+
+    loadPdfjs()
+      .then((lib) => lib.getDocument(d.file).promise)
+      .then((pdf) => {
+        doc = pdf;
+        pg.textContent = "Page 1 of " + pdf.numPages;
+        return draw();
+      })
+      .catch(() => {
+        pg.textContent = "Reading in your browser's PDF viewer";
+        box.innerHTML = '<iframe class="ac-pdf-frame" src="' + d.file + '#view=FitH" title="' + esc(d.title) + '"></iframe>';
+      });
+
+    if (readerScroll) window.removeEventListener("scroll", readerScroll);
+    readerScroll = onScroll;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.querySelectorAll("[data-z]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const z = +b.dataset.z;
+        zoom = z === 0 ? 1 : Math.max(0.6, Math.min(2, zoom + z * 0.2));
+        if (doc) draw();
+      })
+    );
   }
 
   /* -------------------------------------------------------------- lesson */
@@ -388,7 +527,9 @@ window.AcademyUI = (() => {
       (prev ? '<a class="btn btn-quiet" href="#mc/' + c.id + "/" + prev.id + '">Previous</a>' : "") +
       "</div></div>" +
       '<aside class="lesson-side">' +
-      '<div class="side-card"><h3>' + esc(c.title) + '</h3><div class="bar"><span style="width:' + p.pct + '%"></span></div><p class="hint">' + p.done + " of " + p.total + ' lessons complete</p><ol class="ac-toc">' + list + '</ol><a class="btn btn-quiet sm ac-toc-quiz" href="#mc/' + c.id + '/quiz">Final quiz</a></div>' +
+      '<div class="side-card"><h3>' + esc(c.title) + '</h3><div class="bar"><span style="width:' + p.pct + '%"></span></div><p class="hint">' + p.done + " of " + p.total + ' lessons complete</p><ol class="ac-toc">' + list + '</ol><a class="btn btn-quiet sm ac-toc-quiz" href="#mc/' + c.id + '/quiz">Final quiz</a>' +
+      A.pdfs(c.id).map((d) => '<a class="ac-toc-pdf" href="#mc/' + c.id + "/read/" + d.id + '">' + PDF_ICON + "<span>" + esc(d.title) + "</span></a>").join("") +
+      "</div>" +
       "</aside></div>";
 
     $("#ac-mark").addEventListener("click", () => {
@@ -528,6 +669,7 @@ window.AcademyUI = (() => {
     if (!A.isLive(c)) return renderCourse(c);
     if (parts[2] === "quiz") return renderQuiz(c);
     if (parts[2] === "certificate") return renderCertificate(c);
+    if (parts[2] === "read") return renderReader(c, parts[3]);
     return renderLesson(c, parts[2]);
   }
 

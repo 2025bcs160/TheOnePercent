@@ -382,7 +382,62 @@ window.Academy = (() => {
 
   /* flagship courses carry their own cover art; the rest get a generated
      chart cover in their school's accent, so no two cards look the same */
-  const COURSE_IMG = { "market-structure": "market-structure", "supply-demand": "supply-demand", liquidity: "smart-money", psychology: "psychology" };
+  const COURSE_IMG = {
+    "market-structure": "market-structure",
+    "supply-demand": "supply-demand",
+    liquidity: "smart-money",
+    psychology: "psychology",
+    candlesticks: "candlesticks",
+    "order-blocks": "order-blocks",
+    "risk-management": "risk-management",
+  };
+
+  /* Course PDFs. Every file here is an original The1% document, generated
+     from the course itself by tools/workbook.html (see docs/PHASE-1.md 3h).
+     They open in the in-app reader at #mc/<course>/read/<pdf id>. */
+  const PDF_DIR = "../assets/academy/pdf/";
+  const workbook = (id, title, pages, desc) => ({ id: "workbook", title, desc, pages, file: PDF_DIR + id + "-workbook.pdf", kind: "Workbook" });
+  const PDFS = {
+    "market-structure": [workbook("market-structure", "The1% Market Structure Workbook", 18, "Every lesson on one page: swing points, trends, BOS and CHoCH, internal and external structure, with the charts, takeaways and practice tasks.")],
+    "supply-demand": [workbook("supply-demand", "The1% Supply & Demand Workbook", 19, "How zones form, the four formations, drawing proximal and distal lines, The1% zone scorecard and the full zone routine.")],
+    liquidity: [workbook("liquidity", "The1% Liquidity Workbook", 18, "Buy-side and sell-side liquidity, equal highs and lows, the sweep versus the breakout, and the sweep-and-shift entry model.")],
+    psychology: [workbook("psychology", "The1% Trading Psychology Workbook", 19, "Probability thinking, fear, greed and FOMO, revenge trading, the circuit breaker and a daily routine you can keep.")],
+    candlesticks: [workbook("candlesticks", "The1% Candlestick Workbook", 18, "Candle anatomy, pin bars, dojis, marubozu, engulfing, inside bars and stars, plus The1% candle checklist.")],
+    "order-blocks": [workbook("order-blocks", "The1% Order Blocks Workbook", 17, "Defining and validating order blocks, refinement and stops, breakers and mitigation blocks, and The1% entry model.")],
+    "risk-management": [
+      workbook("risk-management", "The1% Risk Management Workbook", 13, "Why 1%, position sizing, structure stops, R and expectancy, daily rails and step-down sizing, with worked examples."),
+      { id: "risk-plan", title: "The1% Risk Plan Worksheet", desc: "A fill-in worksheet for your own rules: risk per trade, stops, news, rails, drawdown steps and a 10-trade commitment tracker.", pages: 3, file: PDF_DIR + "risk-plan-worksheet.pdf", kind: "Worksheet" },
+    ],
+  };
+  const pdfs = (id) => PDFS[id] || [];
+
+  /* Further reading: published books, listed by title and author only.
+     They are recommendations to buy or borrow, not files we host. */
+  const READING = {
+    psychology: [
+      ["Trading in the Zone", "Mark Douglas", "The classic on probabilistic thinking and accepting risk."],
+      ["The Disciplined Trader", "Mark Douglas", "How beliefs and fear shape what you see on the chart."],
+      ["Best Loser Wins", "Tom Hougaard", "A professional's view on losing well and scaling winners."],
+      ["The Psychology of Money", "Morgan Housel", "Short essays on behaviour, greed and long-term thinking."],
+      ["Atomic Habits", "James Clear", "Building the small daily routines this course asks for."],
+    ],
+    "market-structure": [
+      ["Technical Analysis of the Financial Markets", "John J. Murphy", "The standard reference on trends, support and resistance."],
+      ["Price Action Trading", "Bill Eykyn", "Reading bars and structure without indicators."],
+    ],
+    "supply-demand": [
+      ["Markets in Profile", "James F. Dalton, Robert B. Dalton and Eric T. Jones", "Auction theory behind why zones and balance areas form."],
+    ],
+    candlesticks: [
+      ["21 Candlesticks Every Trader Should Know", "Melvin Pasternak", "A compact guide to the core patterns."],
+      ["Profitable Candlestick Trading", "Stephen W. Bigalow", "Pattern reliability and how to confirm signals."],
+    ],
+    "risk-management": [
+      ["The Essentials of Trading", "John Forman", "Risk, money management and building a trading plan."],
+      ["The New Market Wizards", "Jack D. Schwager", "Interviews with top traders; risk control comes up in almost every one."],
+    ],
+  };
+  const reading = (id) => (READING[id] || []).map(([title, author, why]) => ({ title, author, why }));
 
   const courses = raw.map(([id, school, title, level, hours, tagline, modules]) => ({
     id,
@@ -426,7 +481,8 @@ window.Academy = (() => {
   const lessonCount = (c) => (c.content ? c.content.lessons.length : c.syllabus.reduce((a, m) => a + m.lessons.length, 0));
 
   /* flagship order for the "Start here" row */
-  const featured = ["market-structure", "supply-demand", "liquidity", "psychology"];
+  const featured = ["candlesticks", "market-structure", "risk-management", "psychology"];
+  const deeper = ["supply-demand", "liquidity", "order-blocks"];
 
-  return { BRAND, PASS_MARK, schools, courses, course, school, register, isLive, lessonCount, featured };
+  return { BRAND, PASS_MARK, schools, courses, course, school, register, isLive, lessonCount, featured, deeper, pdfs, PDFS, reading };
 })();
