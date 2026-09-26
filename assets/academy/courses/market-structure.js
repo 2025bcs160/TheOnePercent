@@ -266,6 +266,20 @@ Academy.register("market-structure", {
             alt: "Bitcoin daily chart showing a change of character and lower highs"
           }
         },
+        {
+          h: "Worked example: USDJPY, July to September 2026",
+          p: ["A CHoCH is the first warning that a trend has ended. Follow the numbers to see how the new trend is confirmed."],
+          fig: {
+            type: "shot",
+            src: "we-choch-usdjpy",
+            title: "From uptrend to downtrend",
+            tag: "Worked example",
+            steps: ["The uptrend: higher lows at 160.466 (3 July) and 161.276 (10 July), and a high of 163.988 on 23 July.", "30 July: one candle falls from 163.739 to 157.923, about 580 pips, and closes at 159.619, below the last higher low of 161.276. That is the change of character.", "3 August: the fall reaches 155.215.", "2 September: the rally stops at 160.394, far below 163.988. That is a lower high, and it forms inside the old June support area of 159.5 to 160.4.", "8 September: 152.881, below the August low. A lower high plus a lower low: the downtrend is confirmed.", "24 September: price is back at 159.036, testing the same zone again. The next swing decides whether the downtrend holds."],
+            caption: "The CHoCH (2) is only the warning. The confirmation is the lower high (4) and the lower low (5).",
+            meta: "USDJPY · 1D · Jun - Sep 2026",
+            alt: "USDJPY daily chart showing a change of character, a lower high and a lower low",
+          },
+        },
       ],
       takeaways: [
         "CHoCH = the first close against the trend through the protected swing.",

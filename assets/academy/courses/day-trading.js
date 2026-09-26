@@ -20,8 +20,8 @@ Academy.register("day-trading", {
           p: ["East Africa Time is UTC+3 all year. The times below are approximate forex session hours; the busiest parts are the first two or three hours of London and the London and New York overlap."],
           ul: [
             "Asia (Tokyo, Sydney): 00:00 to 07:00 UTC, which is 03:00 to 10:00 EAT. Usually a narrow range on EUR and GBP pairs.",
-            "London: 07:00 to 12:00 UTC for the main move, 10:00 to 15:00 EAT. Volume jumps; the Asian range is often broken.",
-            "New York: 13:00 to 20:00 UTC, 16:00 to 23:00 EAT. US data is released at 12:30 or 13:30 UTC (15:30 or 16:30 EAT) depending on US daylight saving.",
+            "London: 07:00 to 12:00 UTC in the northern summer for the main move (an hour later in winter), 10:00 to 15:00 EAT. Volume jumps; the Asian range is often broken.",
+            "New York: 12:00 to 20:00 UTC in the northern summer (an hour later in winter), 15:00 to 23:00 EAT. US data is released at 12:30 or 13:30 UTC (15:30 or 16:30 EAT) depending on US daylight saving.",
             "Overlap: roughly 12:00 to 16:00 UTC, 15:00 to 19:00 EAT. The most liquid hours of the day.",
           ],
           fig: {
@@ -29,7 +29,7 @@ Academy.register("day-trading", {
             src: "dt-sessions-eurusd",
             title: "One trading day, three sessions",
             tag: "Real chart",
-            caption: "EURUSD on 19 August 2026. Asia held a 19-pip range. London broke above it. New York extended the move by another 75 pips. Times on the chart are UTC; add 3 hours for EAT.",
+            caption: "EURUSD on 19 August 2026. Asia (00:00 to 06:00 UTC) held a 19-pip range. Price broke above it just before London opened and pushed through R1 and R2 during London. New York then added another 75 pips. Times on the chart are UTC; add 3 hours for EAT.",
             meta: "EURUSD · 1H · 19 Aug 2026",
             alt: "EURUSD hourly chart shaded by Asian, London and New York sessions with pivot levels",
           },
@@ -37,13 +37,13 @@ Academy.register("day-trading", {
         {
           h: "Choosing your hours",
           p: [
-            "You do not need to trade all day. From Kampala or Nairobi, the London open (10:00 EAT) and the New York open (16:00 to 17:00 EAT) fit around a working day better than almost anywhere else in the world. Pick one window of two to three hours and trade only that window.",
+            "You do not need to trade all day. From Kampala or Nairobi, the London open (10:00 EAT) and the New York open (15:00 to 16:30 EAT in the northern summer, an hour later in winter) fit around a working day better than almost anywhere else in the world. Pick one window of two to three hours and trade only that window.",
           ],
           note: "Most bad day trades are taken in the quiet hours out of boredom. Your window is when you trade; outside it you only plan and review.",
         },
       ],
       takeaways: [
-        "EAT = UTC+3; London opens around 10:00 EAT, New York around 16:00 EAT.",
+        "EAT = UTC+3; London opens around 10:00 EAT (11:00 in the northern winter), New York around 15:00 EAT (16:00 in winter).",
         "Asia often builds a range; London and New York break and extend it.",
         "Trade one fixed window, not the whole day.",
       ],
@@ -126,7 +126,7 @@ Academy.register("day-trading", {
             src: "tf-pips-eurusd",
             title: "The New York extension on 19 August",
             tag: "Real chart",
-            caption: "From 1.16063 at 13:00 UTC (16:00 EAT) to 1.16809 by 15:00 UTC: 74.6 pips in two hours, all above R2.",
+            caption: "From 1.16063 at 12:00 UTC (15:00 EAT, the New York open) to 1.16809 in the 14:00 UTC candle: 74.6 pips in under three hours, all above R2.",
             meta: "EURUSD · 1H · 19 Aug 2026",
             alt: "EURUSD hourly chart with a measured 74.6 pip move during the New York session",
           },
@@ -220,7 +220,7 @@ Academy.register("day-trading", {
             "Stop: beyond the pullback low (or high).",
             "Target: the next pivot level or the session high.",
           ],
-          note: "On 19 August 2026, EURUSD broke the Asian high of 1.15929 at 07:00 UTC, held above R2 (1.16009) through the London session, and New York drove the next leg. Both an open drive and a pullback entry had clear stops.",
+          note: "On 19 August 2026, EURUSD broke the Asian high of 1.15929 at 06:00 UTC, just before London, then climbed above R2 (1.16009) during the London session, and New York drove the next leg. Both an open drive and a pullback entry had clear stops.",
         },
         {
           h: "3. Reversal at an extreme",
@@ -230,6 +230,21 @@ Academy.register("day-trading", {
             "Stop: beyond the sweep wick.",
             "Target: the pivot P or the session midpoint. Reversals are counter-trend, so take smaller targets.",
           ],
+        },
+        {
+          h: "Worked example: GBPJPY London breakout, 7 September 2026",
+          p: ["The Asian range breakout from the setups above, on a JPY cross. Note the false break before the real one."],
+          fig: {
+            type: "shot",
+            src: "we-london-gbpjpy",
+            title: "Asian range, fake break, London break",
+            tag: "Worked example",
+            steps: ["Asia (00:00 to 06:00 UTC, 03:00 to 09:00 EAT): a 61-pip range from 210.591 to 211.199.", "06:00 UTC: a wick down to 210.356, but the candle closes back inside the range at 210.828. No close outside, no trade.", "07:00 UTC (10:00 EAT, the London open): this candle closes at 210.494, below the range. That is the signal.", "08:00 UTC: price drops to 208.637, 195 pips below the Asian low. The 2R target is hit in this candle.", "Until 20:00 UTC every candle stays inside the range of the 08:00 candle. The move for the day was done by 11:00 EAT."],
+            trade: [["Entry", "210.49"], ["Stop", "210.90 · 41 pips"], ["Target", "209.67 · 2R"], ["Size, $10k at 1%", "≈ 0.38 lots"]],
+            caption: "Sizing: with USDJPY near 155.5, one GBPJPY pip on 1 lot is about $6.43. $100 ÷ (41 pips × $6.43) ≈ 0.38 lots. The fake break at 06:00 is why you wait for a close outside the range.",
+            meta: "GBPJPY · 1H · 7 Sep 2026 · times UTC",
+            alt: "GBPJPY hourly chart with the Asian range, a false break, the London breakout and a short position",
+          },
         },
       ],
       takeaways: [

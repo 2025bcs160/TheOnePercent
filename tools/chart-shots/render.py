@@ -92,7 +92,7 @@ def render(spec):
     if len(bars) < 5:
         raise SystemExit(f"{spec['id']}: only {len(bars)} bars in window")
     n = len(bars)
-    dec = spec.get("dec", {"EURUSD": 5, "GBPUSD": 5, "AUDUSD": 5, "USDJPY": 3, "BTCUSD": 0, "SPX": 1, "NAS100": 1}.get(spec["symbol"], 2))
+    dec = spec.get("dec", {"EURUSD": 5, "GBPUSD": 5, "AUDUSD": 5, "NZDUSD": 5, "USDCAD": 5, "USDCHF": 5, "EURGBP": 5, "USDJPY": 3, "EURJPY": 3, "GBPJPY": 3, "AUDJPY": 3, "BTCUSD": 0, "SPX": 1, "NAS100": 1}.get(spec["symbol"], 2))
 
     idx = {b["t"]: i for i, b in enumerate(bars)}
 
@@ -112,7 +112,7 @@ def render(spec):
     lo = min(b["l"] for b in bars)
     hi = max(b["h"] for b in bars)
     for a in spec.get("ann", []):
-        for k in ("lo", "hi", "p", "entry", "stop", "target"):
+        for k in ("lo", "hi", "p", "entry", "stop", "target"):  # steps are placed inside the range
             if k in a and isinstance(a[k], (int, float)):
                 lo, hi = min(lo, a[k]), max(hi, a[k])
     pad = (hi - lo) * spec.get("pad", 0.08)
@@ -281,6 +281,14 @@ def render(spec):
             if a.get("label"):
                 pos = a.get("lpos", "above")
                 s.append(label_box((xa + xb) / 2, ya - 10 if pos == "above" else yb + 24, a["label"], k, anchor="middle", size=12.5))
+        elif a["t"] == "step":  # numbered marker, explained in the lesson's step list
+            x, y = X(bi(a["at"])), Y(a["p"])
+            dx, dy = a.get("dx", 0), a.get("dy", 0)
+            if dx or dy:
+                s.append(f'<line x1="{x:.1f}" y1="{y:.1f}" x2="{x + dx:.1f}" y2="{y + dy:.1f}" stroke="{col(k)}" stroke-width="1.4" stroke-opacity="0.8"/>')
+            x, y = x + dx, y + dy
+            s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="15" fill="{col(k)}" stroke="{C["bg"]}" stroke-width="3"/>')
+            s.append(f'<text x="{x:.1f}" y="{y + 5.5:.1f}" text-anchor="middle" class="sans" font-size="15" font-weight="600" fill="{C["bg"]}">{esc(a["n"])}</text>')
         elif a["t"] == "label":
             x, y = X(bi(a["at"])), Y(a["p"])
             s.append(label_box(x, y, a["text"], k, anchor=a.get("anchor", "middle"), size=a.get("size", 12.5)))

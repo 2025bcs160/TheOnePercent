@@ -241,6 +241,21 @@ Academy.register("liquidity", {
             alt: "Bitcoin daily chart with equal lows swept on 13 January 2025"
           }
         },
+        {
+          h: "Worked example: USDCAD sweep, July 2024",
+          p: ["Equal lows look like strong support. Here they were a pool of stop orders, and the market went to collect them before turning."],
+          fig: {
+            type: "shot",
+            src: "we-sweep-usdcad",
+            title: "Equal lows, sweep, reversal",
+            tag: "Worked example",
+            steps: ["3 June: a low at 1.35980.", "5 July: another low at exactly 1.35980. Equal lows: sell stops from both swings sit just below.", "11 July: price dips to 1.35840, 14 pips below, triggers those stops, and closes back above at 1.36239. That is a sweep, not a breakdown.", "15 July: a close of 1.36774, above the sweep candle's high of 1.36480, confirms the shift.", "5 August: 1.39465, about 360 pips above the sweep low."],
+            trade: [["Entry", "1.36770"], ["Stop", "1.35750 · 102 pips"], ["Target", "1.38810 · 2R"], ["Result", "Hit 1 Aug"]],
+            caption: "A breakdown closes below the level and keeps going. A sweep pokes below it and closes back above. The close is what tells them apart.",
+            meta: "USDCAD · 1D · Jun - Aug 2024",
+            alt: "USDCAD daily chart with equal lows at 1.3598, a sweep to 1.3584 and a rally",
+          },
+        },
       ],
       takeaways: [
         "Sweep = through the level and closed back inside. Breakout = closed beyond and held.",
@@ -357,7 +372,7 @@ Academy.register("liquidity", {
         {
           h: "On a real chart: one day of sessions",
           p: [
-            "EURUSD on 19 August 2026, times in UTC. Asia built a tight range. London broke above it and through the daily R1 and R2 pivots, and New York extended the move by another 70 pips. The Asian range high became the level that defined the day."
+            "EURUSD on 19 August 2026, times in UTC. Asia built a tight range. Price broke above it just before the London open and climbed through the daily R1 and R2 pivots in London, and New York extended the move by another 75 pips. The Asian range high became the level that defined the day."
           ],
           fig: {
             type: "shot",

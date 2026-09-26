@@ -220,6 +220,21 @@
               "If the stop were 40 pips, the same 10 dollars allows 0.25 dollars per pip, which is 0.025 lots. Wider stop, smaller position, same risk.",
             ],
           },
+          {
+            h: "Worked example: pips on EURJPY",
+            p: ["JPY pairs are quoted with two decimals for pips; the third decimal is a pipette. So one pip is 0.01, not 0.0001."],
+            fig: {
+              type: "shot",
+              src: "we-pips-eurjpy",
+              title: "Counting pips on a JPY pair",
+              tag: "Worked example",
+              steps: ["Asia on 2 July 2026 is quiet: EURJPY trades between 184.787 and 185.085, about 30 pips.", "06:00 UTC: one candle falls from 184.824 to 183.731. 184.824 − 183.731 = 1.093, and 1.093 ÷ 0.01 = 109.3 pips.", "The rest of the morning bounces to 184.421 but stays well below the open."],
+              trade: [["1 pip", "0.01"], ["Per lot", "1,000 JPY ≈ $6.16"], ["Move", "109.3 pips"], ["On 1 lot", "≈ $673"]],
+              caption: "1 lot = 100,000 EUR, and 100,000 × 0.01 = 1,000 JPY per pip. With USDJPY at 162.3 that is about $6.16, so 109.3 pips is about $673 on 1 lot, or $67 on 0.1 lot. The same rule works for GBPJPY, USDJPY and AUDJPY.",
+              meta: "EURJPY · 1H · 2 Jul 2026 · times UTC",
+              alt: "EURJPY hourly chart with a 109.3-pip candle measured from 184.824 to 183.731",
+            },
+          },
         ],
         takeaways: [
           "Pip = 0.0001 on most pairs, 0.01 on yen pairs.",

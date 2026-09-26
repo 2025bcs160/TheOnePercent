@@ -10,4 +10,12 @@ data/*
 !data/XAUUSD_1D.csv
 !data/XAUUSD_4H.csv
 !data/BTCUSD_1D.csv
+!data/EURJPY_1D.csv
+!data/EURJPY_1H.csv
+!data/GBPJPY_1D.csv
+!data/GBPJPY_1H.csv
+!data/USDJPY_1D.csv
+!data/AUDJPY_1D.csv
+!data/USDCAD_1D.csv
+!data/EURGBP_1D.csv
 .tmp.*

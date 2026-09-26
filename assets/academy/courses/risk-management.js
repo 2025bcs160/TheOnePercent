@@ -46,6 +46,21 @@
             ],
             note: "The1% default: risk 1% of the account per trade. Newer traders and prop firm challenges often use 0.5%.",
           },
+          {
+            h: "Worked example: AUDJPY, July to August 2024",
+            p: ["This is why the stop and the 1% rule come before any setup. Follow the numbers."],
+            fig: {
+              type: "shot",
+              src: "we-risk-audjpy",
+              title: "Why the stop comes first",
+              tag: "Worked example",
+              steps: ["11 July: AUDJPY trades at 109.371, near its high for the year, then falls more than 260 pips in the same day.", "12 July: the low of 106.714 looks cheap to dip buyers. With no stop, they hold.", "29 July: every bounce is smaller. The rally stalls at 101.232, a lower high.", "5 August: a 494-pip range in one day and a low of 90.124, about 1,925 pips (17.6%) below the July high."],
+              trade: [["No stop · 1 lot", "≈ −$12,000 to −$13,000"], ["1% risk · 0.1 lot", "−$100"]],
+              caption: "On 1 lot each AUDJPY pip was worth about $6.20 to $6.95 over this period, so 1,925 pips is more than a $10,000 account. With 1% risk and a 150-pip stop, the same account trades about 0.1 lot and loses $100.",
+              meta: "AUDJPY · 1D · Jul - Aug 2024",
+              alt: "AUDJPY daily chart falling from 109.37 to 90.12 in under four weeks",
+            },
+          },
         ],
         takeaways: [
           "Losing streaks are a certainty, not a possibility.",

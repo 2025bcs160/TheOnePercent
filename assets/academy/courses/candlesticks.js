@@ -143,6 +143,21 @@ Academy.register("candlesticks", {
             alt: "GBPUSD daily chart with a shooting star on 17 September 2025"
           }
         },
+        {
+          h: "Worked example: GBPJPY hammer, September 2024",
+          p: ["A hammer after a long fall, a second test of its low, then confirmation. Follow the numbers."],
+          fig: {
+            type: "shot",
+            src: "we-hammer-gbpjpy",
+            title: "Hammer, retest, confirmation",
+            tag: "Worked example",
+            steps: ["2 September: GBPJPY peaks at 193.476 and falls almost 1,000 pips over the next seven sessions.", "11 September: a hammer. The low is 183.710 but the close of 185.974 is 226 pips above it; the lower wick is over 90% of the candle.", "16 September: price tests the low again at 183.755, 4.5 pips above the hammer, and closes at 185.995. The low holds.", "17 September: confirmation. The close of 186.973 is above the hammer's high of 186.197.", "26 September: 194.586, back above the 2 September high."],
+            trade: [["Entry", "186.97"], ["Stop", "183.60 · 337 pips"], ["Target", "193.47 · 1.9R"], ["Result", "Hit 26 Sep"]],
+            caption: "A hammer is a signal, not an entry. Waiting for the close above its high cost 100 pips of the move but confirmed that buyers had taken over.",
+            meta: "GBPJPY · 1D · Sep 2024",
+            alt: "GBPJPY daily chart with a hammer at 183.71, a retest and a long position",
+          },
+        },
       ],
       takeaways: [
         "Wick at least two thirds of the range, body at one end.",

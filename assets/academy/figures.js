@@ -28,6 +28,8 @@
               history by tools/chart-shots (The1% branded, never a third-
               party screenshot) so the annotations sit on the exact candles.
               src is the file name in assets/academy/shots without .webp.
+              Worked examples add steps:["…"] (explains the numbered markers
+              on the chart, in order) and trade:[["Entry","…"],…].
 
    Overlays (candles)
      { zone:[b0, b1|null, lo, hi], kind:"demand"|"supply"|"brand", label }
@@ -388,6 +390,16 @@ window.Figures = (() => {
       '<button type="button" class="shot" data-shot="' + esc(src) + '" aria-label="Enlarge chart: ' + esc(spec.alt || spec.title || "") + '">' +
       '<img src="' + esc(src) + '" alt="' + esc(spec.alt || spec.title || "") + '" width="1440" height="810" loading="lazy" decoding="async">' +
       "</button>" +
+      (spec.steps && spec.steps.length
+        ? '<ol class="shot-steps">' + spec.steps.map(function (t, i) {
+            return '<li><span class="shot-n">' + (i + 1) + "</span><span>" + esc(t) + "</span></li>";
+          }).join("") + "</ol>"
+        : "") +
+      (spec.trade
+        ? '<dl class="shot-trade">' + spec.trade.map(function (r) {
+            return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>";
+          }).join("") + "</dl>"
+        : "") +
       "<figcaption>" + (spec.caption ? esc(spec.caption) : "") +
       (spec.meta ? '<span class="shot-meta">' + esc(spec.meta) + " · real market data · The1% Charts</span>" : "") +
       "</figcaption>" +

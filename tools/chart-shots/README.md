@@ -24,8 +24,14 @@ python render.py                 # renders every spec to assets/academy/shots/
 python render.py fvg-bull-eurusd # renders one
 ```
 
-Data came from Yahoo Finance via `yfinance` (1H history; forex daily bars are
-rebuilt from the 1H series in UTC because Yahoo's FX daily bars are unreliable).
+Data came from Yahoo Finance via `yfinance` (1H history). Intraday timestamps are
+stored in UTC and 4H bars are resampled from 1H on UTC boundaries. Forex daily bars
+are rebuilt from the 1H series because Yahoo's FX daily bars are unreliable (the
+older EURUSD, GBPUSD and AUDUSD daily files use London-midnight days, the newer
+pairs use UTC days).
+
+Worked examples use `{"t": "step", "n": 1, "at": ..., "p": ..., "dx": .., "dy": ..}`
+markers; the lesson figure's `steps` list explains each number in order.
 To add a new image, add the CSV to `data/`, add a spec to `specs.py`, render,
 and check it visually before using it in a lesson with
 `{ type: "shot", src: "<id>", title, caption, meta, alt }`.
