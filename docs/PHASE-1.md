@@ -684,3 +684,45 @@ painted behind the toolbar. Separately, the market half of the search index was
 a five-entry demo array: twenty-two of the twenty-seven instruments, including
 every shilling pair, were unsearchable. It reads `Instruments.INSTRUMENTS` now,
 with `base` and `quote` in the haystack so a currency code finds its pairs.
+
+## 3h. The1% Academy: masterclasses in Learn
+
+Learn now opens on **Masterclasses** (`pages/learn.html#masterclasses`). The
+original 24-lesson path stays under the "Core path" tab, unchanged.
+
+- **Catalog** (`assets/academy/catalog.js`): 65 masterclasses in 10 schools
+  (Foundations, Price Action, Smart Money & Institutional, Trading Psychology,
+  Risk & Money Management, Technical Indicators, Fundamentals & Macro,
+  Trading Styles, Markets, Strategy & Professional). Every course has a
+  syllabus, level and hours, even before its lessons are written.
+- **Full courses** (`assets/academy/courses/*.js`): Candlesticks, Market
+  Structure, Risk Management, Trading Psychology, Supply & Demand,
+  Liquidity and Order Blocks (7 courses, 44 lessons). Each lesson has chart
+  figures, key takeaways, common mistakes, a psychology check, a practice
+  task and a link into a platform tool. Each course ends with a 10-question
+  quiz (80% to pass) and a printable The1% certificate.
+- **Enroll for the course**: every course page and card has the button.
+  Lessons unlock once enrolled. Courses still in production can be enrolled
+  in now, so users are notified when they go live.
+- **Charts** (`assets/academy/figures.js`): a small SVG engine for candles,
+  lines, bars and process diagrams. Colours come from CSS tokens, so charts
+  follow dark and light themes.
+- **Progress** is stored under `onepercent:academy` via `Store.academy`
+  (enrolled, done, quiz, last).
+- **Adding a course**: create `assets/academy/courses/<id>.js`, call
+  `Academy.register("<id>", { outcomes, lessons, quiz })`, and add the
+  script tag to `pages/learn.html`. The catalog marks it live automatically.
+
+- **Course PDFs** (`assets/academy/pdf/`): a The1% Workbook for every full
+  course plus The1% Risk Plan Worksheet. Enrolled users read them in the
+  in-app reader (`#mc/<id>/read/<pdf>`, rendered with PDF.js, falling back
+  to the browser viewer) or download them. The PDFs are generated from the
+  course files, so they always match the lessons: start a local server at
+  the repo root (`python3 -m http.server 8800`) and run
+  `node tools/build-pdfs.mjs` (needs Playwright and `pypdf`). Page counts
+  live in `Academy.PDFS` in `catalog.js`.
+- **Further reading**: each course lists published books by title and
+  author only. We do not host or rebrand third-party books or courses.
+
+All course text is original and branded The1%. External learning sites were
+used for topic coverage only; no third-party names or text are included.

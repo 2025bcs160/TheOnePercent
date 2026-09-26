@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Learn — TheOnePercent</title>
-<meta name="description" content="Twenty-four lessons from beginner to advanced, gated by a ten-question quiz at eighty percent, with one worked example per market you trade and a resource library you can download.">
+<title>Learn · The1% Academy</title>
+<meta name="description" content="The1% Academy: 65 trading masterclasses across 10 schools, from market structure, supply and demand and liquidity to trading psychology, with chart-based lessons, final quizzes and certificates.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="../assets/shell.css">
 <link rel="stylesheet" href="../assets/components.css">
 <link rel="stylesheet" href="../assets/learn.css">
+<link rel="stylesheet" href="../assets/academy/academy.css">
 </head>
 <!-- one folder deep; the shell injects nav and the right rail itself -->
 <body data-page="learn" data-depth="1">
@@ -48,13 +49,19 @@
     <!-- two sub-tabs plus the glossary, mirroring the fragment deep links
          the calculators already use: #path, #library, #glossary -->
     <nav class="subtabs" aria-label="Learn sections">
-      <a href="#path" data-tab="path" aria-current="page">Path</a>
+      <a href="#masterclasses" data-tab="academy" aria-current="page">Masterclasses</a>
+      <a href="#path" data-tab="path">Core path</a>
       <a href="#library" data-tab="library">Resource library</a>
       <a href="#glossary" data-tab="glossary">Glossary</a>
     </nav>
 
+    <!-- ---------------------------------------------------- masterclasses
+         The1% Academy: catalog, course pages, lessons, quiz, certificate.
+         Rendered by assets/academy/academy.js -->
+    <section id="view-academy" class="view"></section>
+
     <!-- ------------------------------------------------------------ path -->
-    <section id="view-path" class="view">
+    <section id="view-path" class="view" hidden>
 
       <div class="notice" id="skip-notice" hidden></div>
 
@@ -122,6 +129,16 @@
 
 <script src="../assets/store.js"></script>
 <script src="../assets/lessons.js"></script>
+<script src="../assets/academy/catalog.js"></script>
+<script src="../assets/academy/figures.js"></script>
+<script src="../assets/academy/courses/market-structure.js"></script>
+<script src="../assets/academy/courses/supply-demand.js"></script>
+<script src="../assets/academy/courses/liquidity.js"></script>
+<script src="../assets/academy/courses/psychology.js"></script>
+<script src="../assets/academy/courses/candlesticks.js"></script>
+<script src="../assets/academy/courses/order-blocks.js"></script>
+<script src="../assets/academy/courses/risk-management.js"></script>
+<script src="../assets/academy/academy.js"></script>
 <script src="../assets/learn.js"></script>
 <script src="../assets/shell.js"></script>
 </body>
