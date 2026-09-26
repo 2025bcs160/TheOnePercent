@@ -684,3 +684,33 @@ painted behind the toolbar. Separately, the market half of the search index was
 a five-entry demo array: twenty-two of the twenty-seven instruments, including
 every shilling pair, were unsearchable. It reads `Instruments.INSTRUMENTS` now,
 with `base` and `quote` in the haystack so a currency code finds its pairs.
+
+## 3h. The1% Academy: masterclasses in Learn
+
+Learn now opens on **Masterclasses** (`pages/learn.html#masterclasses`). The
+original 24-lesson path stays under the "Core path" tab, unchanged.
+
+- **Catalog** (`assets/academy/catalog.js`): 65 masterclasses in 10 schools
+  (Foundations, Price Action, Smart Money & Institutional, Trading Psychology,
+  Risk & Money Management, Technical Indicators, Fundamentals & Macro,
+  Trading Styles, Markets, Strategy & Professional). Every course has a
+  syllabus, level and hours, even before its lessons are written.
+- **Full courses** (`assets/academy/courses/*.js`): Market Structure,
+  Supply & Demand, Liquidity and Trading Psychology. Each lesson has chart
+  figures, key takeaways, common mistakes, a psychology check, a practice
+  task and a link into a platform tool. Each course ends with a 10-question
+  quiz (80% to pass) and a printable The1% certificate.
+- **Enroll for the course**: every course page and card has the button.
+  Lessons unlock once enrolled. Courses still in production can be enrolled
+  in now, so users are notified when they go live.
+- **Charts** (`assets/academy/figures.js`): a small SVG engine for candles,
+  lines, bars and process diagrams. Colours come from CSS tokens, so charts
+  follow dark and light themes.
+- **Progress** is stored under `onepercent:academy` via `Store.academy`
+  (enrolled, done, quiz, last).
+- **Adding a course**: create `assets/academy/courses/<id>.js`, call
+  `Academy.register("<id>", { outcomes, lessons, quiz })`, and add the
+  script tag to `pages/learn.html`. The catalog marks it live automatically.
+
+All course text is original and branded The1%. External learning sites were
+used for topic coverage only; no third-party names or text are included.

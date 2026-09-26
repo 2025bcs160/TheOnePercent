@@ -27,7 +27,7 @@ window.Store = (() => {
   "use strict";
 
   const NS = "onepercent:";
-  const SINGLETONS = { settings: true, profile: true, draft: true, learn: true };
+  const SINGLETONS = { settings: true, profile: true, draft: true, learn: true, academy: true };
 
   /* ---------------------------------------------------------- defaults */
 
@@ -1036,6 +1036,81 @@ window.Store = (() => {
         driver.clear("learn");
         emit("learn");
         return api.learn.get();
+      },
+    },
+
+    /* ---------------------------------------------------------- academy
+       The1% Academy masterclasses: enrolment, lesson completion, final
+       quiz results and certificates. Kept apart from `learn` (the core
+       path) so either can be reset without touching the other.
+
+       Shape:
+         enrolled  { courseId: ISO timestamp }
+         done      { courseId: { lessonId: ISO timestamp } }
+         quiz      { courseId: { best, passed, attempts, lastAt, passedAt } }
+         last      { courseId: lessonId }   where to resume */
+    academy: {
+      get() {
+        const raw = driver.get("academy") || {};
+        return {
+          enrolled: raw.enrolled || {},
+          done: raw.done || {},
+          quiz: raw.quiz || {},
+          last: raw.last || {},
+        };
+      },
+      _save(cur) {
+        driver.patch("academy", cur);
+        emit("academy");
+        return cur;
+      },
+      enroll(courseId) {
+        const cur = api.academy.get();
+        if (!cur.enrolled[courseId]) cur.enrolled[courseId] = new Date().toISOString();
+        return api.academy._save(cur);
+      },
+      leave(courseId) {
+        const cur = api.academy.get();
+        delete cur.enrolled[courseId];
+        return api.academy._save(cur);
+      },
+      markDone(courseId, lessonId) {
+        const cur = api.academy.get();
+        cur.done[courseId] = cur.done[courseId] || {};
+        if (!cur.done[courseId][lessonId]) cur.done[courseId][lessonId] = new Date().toISOString();
+        cur.last[courseId] = lessonId;
+        return api.academy._save(cur);
+      },
+      unmark(courseId, lessonId) {
+        const cur = api.academy.get();
+        if (cur.done[courseId]) delete cur.done[courseId][lessonId];
+        return api.academy._save(cur);
+      },
+      seen(courseId, lessonId) {
+        const cur = api.academy.get();
+        cur.last[courseId] = lessonId;
+        driver.patch("academy", cur);
+        return cur;
+      },
+      /* best never goes down and a pass is never revoked, same rule as
+         the core path's gates */
+      recordQuiz(courseId, pct, passed) {
+        const cur = api.academy.get();
+        const prev = cur.quiz[courseId] || { best: 0, passed: false, attempts: 0 };
+        cur.quiz[courseId] = {
+          best: Math.max(num(prev.best) || 0, pct),
+          last: pct,
+          passed: prev.passed || !!passed,
+          attempts: (num(prev.attempts) || 0) + 1,
+          lastAt: new Date().toISOString(),
+          passedAt: prev.passedAt || (passed ? new Date().toISOString() : ""),
+        };
+        return api.academy._save(cur);
+      },
+      clear() {
+        driver.clear("academy");
+        emit("academy");
+        return api.academy.get();
       },
     },
 

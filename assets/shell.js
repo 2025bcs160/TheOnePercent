@@ -637,6 +637,16 @@ window.Shell = (() => {
        rows, so search can never advertise a lesson that no longer exists.
        The glossary is searchable too — looking up "expectancy" is the most
        likely reason anyone types a word into this box. */
+    /* Academy masterclasses, where the catalog is loaded (the Learn page). */
+    ...(window.Academy
+      ? window.Academy.courses.map((c) => ({
+          group: "Masterclasses",
+          label: c.title,
+          sub: c.tagline,
+          tag: window.Academy.isLive(c) ? "Full course" : c.level,
+          href: P.learn + "#mc/" + c.id,
+        }))
+      : []),
     ...(window.Curriculum
       ? window.Curriculum.lessons.map((l) => ({
           group: "Lessons",

@@ -996,9 +996,12 @@
   }
 
   function show(view) {
-    ["path", "lesson", "quiz", "library", "glossary"].forEach((v) => {
+    ["academy", "path", "lesson", "quiz", "library", "glossary"].forEach((v) => {
       $("#view-" + v).hidden = v !== view;
     });
+    /* the Academy draws its own hero, so the core-path header steps aside */
+    const head = $(".page-head");
+    if (head) head.hidden = view === "academy";
     const tab = view === "lesson" || view === "quiz" ? "path" : view;
     $$(".subtabs a").forEach((a) => {
       if (a.dataset.tab === tab) a.setAttribute("aria-current", "page");
@@ -1012,7 +1015,10 @@
     const st = state();
     renderHeader(st);
 
-    if (h.indexOf("lesson/") === 0) {
+    if ((h === "masterclasses" || h.indexOf("mc/") === 0) && window.AcademyUI) {
+      show("academy");
+      window.AcademyUI.route(h);
+    } else if (h.indexOf("lesson/") === 0) {
       show("lesson");
       renderLesson(h.slice(7));
     } else if (h.indexOf("quiz/") === 0) {
@@ -1075,7 +1081,7 @@
       }
     });
 
-    if (!location.hash) location.replace("#path");
+    if (!location.hash) location.replace(window.AcademyUI ? "#masterclasses" : "#path");
     route();
   }
 
