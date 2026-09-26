@@ -352,3 +352,52 @@ SPECS += [
         ],
     },
 ]
+
+# ------------------------------------------------------------------ before / after
+# A spec with "before" also renders <id>-before.webp: the same window cut at the
+# moment of the decision, with only what a trader could see then plus the plan.
+_BEFORE = {
+    "we-fvg-eurjpy": {"cut": "2024-07-19", "hidden": "What happens next? Plan the trade first", "ann": [
+        {"t": "fvg", "from": "2024-07-16", "to": "2024-07-26", "lo": 171.572, "hi": 172.269, "kind": "down", "op": 0.22},
+        {"t": "label", "at": "2024-07-01", "p": 171.0, "text": "Bearish FVG 171.572 - 172.269", "kind": "down"},
+        {"t": "box", "from": "2024-07-22", "to": "2024-07-25", "entry": 171.60, "stop": 172.40, "target": 168.40, "elabel": "Sell limit 171.60", "slabel": "Stop 172.40", "tlabel": "Target 168.40  4R"},
+        {"t": "step", "n": 1, "at": "2024-07-11", "p": 175.424, "kind": "brand", "dx": 30, "dy": -18},
+        {"t": "step", "n": 2, "at": "2024-07-17", "p": 169.98, "kind": "brand", "dx": 0, "dy": 34},
+        {"t": "step", "n": 3, "at": "2024-07-22", "p": 172.40, "kind": "warn", "dx": 40, "dy": -26},
+    ]},
+    "we-flip-usdcad": {"cut": "2025-12-04", "hidden": "What happens next? Plan the trade first", "ann": [
+        {"t": "zone", "from": "2025-11-10", "to": "2025-12-31", "lo": 1.3967, "hi": 1.3981, "kind": "down", "op": 0.22},
+        {"t": "label", "at": "2025-12-16", "p": 1.4020, "text": "Old support 1.3967 - 1.3981", "kind": "down"},
+        {"t": "box", "from": "2025-12-04", "to": "2025-12-12", "entry": 1.3960, "stop": 1.4000, "target": 1.3880, "elabel": "Sell 1.3960", "slabel": "Stop 1.4000", "tlabel": "Target 1.3880  2R"},
+        {"t": "step", "n": 1, "at": "2025-11-18", "p": 1.3967, "kind": "brand", "dx": 0, "dy": 34},
+        {"t": "step", "n": 2, "at": "2025-12-03", "p": 1.3934, "kind": "down", "dx": 0, "dy": 34},
+        {"t": "step", "n": 3, "at": "2025-12-04", "p": 1.39773, "kind": "warn", "dx": 0, "dy": -60},
+    ]},
+    "we-hammer-gbpjpy": {"cut": "2024-09-17", "hidden": "What happens next? Plan the trade first", "ann": [
+        {"t": "hline", "p": 183.71, "from": "2024-09-11", "to": "2024-09-26", "kind": "up", "dash": True, "label": "Hammer low 183.71", "lpos": "below", "tag": False},
+        {"t": "box", "from": "2024-09-17", "to": "2024-09-26", "entry": 186.97, "stop": 183.60, "target": 193.47, "elabel": "Buy 186.97", "slabel": "Stop 183.60", "tlabel": "Target 193.47  1.9R"},
+        {"t": "step", "n": 1, "at": "2024-09-02", "p": 193.476, "kind": "down", "dx": 0, "dy": -32},
+        {"t": "step", "n": 2, "at": "2024-09-11", "p": 183.71, "kind": "warn", "dx": -30, "dy": 22},
+        {"t": "step", "n": 3, "at": "2024-09-16", "p": 183.755, "kind": "brand", "dx": 0, "dy": 34},
+        {"t": "step", "n": 4, "at": "2024-09-17", "p": 187.455, "kind": "up", "dx": -26, "dy": -30},
+    ]},
+    "we-sweep-usdcad": {"cut": "2024-07-15", "hidden": "What happens next? Plan the trade first", "ann": [
+        {"t": "hline", "p": 1.3598, "from": "2024-06-03", "to": "2024-07-18", "kind": "warn", "dash": True, "label": "Equal lows 1.3598: stops sit below", "lpos": "below", "tag": False},
+        {"t": "box", "from": "2024-07-15", "to": "2024-08-01", "entry": 1.3677, "stop": 1.3575, "target": 1.3881, "elabel": "Buy 1.3677", "slabel": "Stop 1.3575", "tlabel": "Target 1.3881  2R"},
+        {"t": "step", "n": 1, "at": "2024-06-03", "p": 1.3598, "kind": "brand", "dx": -8, "dy": 40},
+        {"t": "step", "n": 2, "at": "2024-07-05", "p": 1.3598, "kind": "brand", "dx": -6, "dy": 40},
+        {"t": "step", "n": 3, "at": "2024-07-11", "p": 1.3584, "kind": "warn", "dx": 10, "dy": 40},
+        {"t": "step", "n": 4, "at": "2024-07-15", "p": 1.36889, "kind": "up", "dx": -24, "dy": -36},
+    ]},
+    "we-london-gbpjpy": {"cut": "2026-09-07 07", "hidden": "What happens next? Plan the trade first", "ann": [
+        {"t": "vband", "from": "2026-09-07 00", "to": "2026-09-07 05", "kind": "muted", "label": "ASIA", "op": 0.07},
+        {"t": "zone", "from": "2026-09-07 00", "to": "2026-09-07 05", "lo": 210.591, "hi": 211.199, "kind": "warn", "label": "Asian range 61 pips"},
+        {"t": "box", "from": "2026-09-07 07", "to": "2026-09-07 11", "entry": 210.49, "stop": 210.90, "target": 209.67, "elabel": "Sell 210.49", "slabel": "Stop 210.90", "tlabel": "Target 209.67  2R"},
+        {"t": "step", "n": 1, "at": "2026-09-07 04", "p": 211.199, "kind": "warn", "dx": 30, "dy": -24},
+        {"t": "step", "n": 2, "at": "2026-09-07 06", "p": 210.356, "kind": "warn", "dx": -10, "dy": 34},
+        {"t": "step", "n": 3, "at": "2026-09-07 07", "p": 210.853, "kind": "down", "dx": 0, "dy": -60},
+    ]},
+}
+for _s in SPECS:
+    if _s["id"] in _BEFORE:
+        _s["before"] = _BEFORE[_s["id"]]

@@ -156,8 +156,9 @@ Academy.register("support-resistance", {
           fig: {
             type: "shot",
             src: "we-flip-usdcad",
+            before: {"src": "we-flip-usdcad-before", "steps": ["Support at 1.3967 to 1.3981 held through mid November.", "3 December: the first daily close below it, at 1.39530.", "4 December: the rally back reaches 1.39773 and fails inside the old zone. The plan: sell near the close at 1.3960, stop above the zone at 1.4000 (40 pips), target 1.3880, 2R."], "trade": [["Order", "Sell 1.3960"], ["Stop", "1.4000 · 40 pips"], ["Target", "1.3880 · 2R"], ["Risk", "1% of the account"]], "note": "Make your own decision first, then switch to After to see what happened."},
             title: "Support becomes resistance",
-            tag: "Worked example",
+            tag: "Before / After",
             steps: ["Mid November: USDCAD holds 1.3967 to 1.3981 several times, with lows of 1.3981 on 13 November and 1.3967 on 18 November. That is support.", "3 December: the first daily close below it, at 1.39530.", "4 December: price rallies back to 1.39773, inside the old support zone, and closes at 1.39597. Old support has become resistance.", "5 December: a 145-pip fall to close at 1.38150.", "26 December: 1.36380, about 340 pips below the retest high."],
             trade: [["Entry", "1.39600"], ["Stop", "1.40000 · 40 pips"], ["Target", "1.38800 · 2R"], ["Result", "Hit 5 Dec"]],
             caption: "Once support breaks, the first rally back into it is where sellers wait.",

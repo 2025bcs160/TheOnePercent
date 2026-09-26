@@ -237,8 +237,9 @@ Academy.register("day-trading", {
           fig: {
             type: "shot",
             src: "we-london-gbpjpy",
+            before: {"src": "we-london-gbpjpy-before", "steps": ["Asia: a 61-pip range from 210.591 to 211.199.", "06:00 UTC: a wick below the range, but the close is back inside. No trade.", "07:00 UTC (10:00 EAT): the candle closes at 210.494, below the range. The plan: sell at 210.49, stop above the candle high at 210.90 (41 pips), target 209.67, 2R."], "trade": [["Order", "Sell 210.49"], ["Stop", "210.90 · 41 pips"], ["Target", "209.67 · 2R"], ["Size, $10k at 1%", "≈ 0.38 lots"]], "note": "Make your own decision first, then switch to After to see what happened."},
             title: "Asian range, fake break, London break",
-            tag: "Worked example",
+            tag: "Before / After",
             steps: ["Asia (00:00 to 06:00 UTC, 03:00 to 09:00 EAT): a 61-pip range from 210.591 to 211.199.", "06:00 UTC: a wick down to 210.356, but the candle closes back inside the range at 210.828. No close outside, no trade.", "07:00 UTC (10:00 EAT, the London open): this candle closes at 210.494, below the range. That is the signal.", "08:00 UTC: price drops to 208.637, 195 pips below the Asian low. The 2R target is hit in this candle.", "Until 20:00 UTC every candle stays inside the range of the 08:00 candle. The move for the day was done by 11:00 EAT."],
             trade: [["Entry", "210.49"], ["Stop", "210.90 · 41 pips"], ["Target", "209.67 · 2R"], ["Size, $10k at 1%", "≈ 0.38 lots"]],
             caption: "Sizing: with USDJPY near 155.5, one GBPJPY pip on 1 lot is about $6.43. $100 ÷ (41 pips × $6.43) ≈ 0.38 lots. The fake break at 06:00 is why you wait for a close outside the range.",

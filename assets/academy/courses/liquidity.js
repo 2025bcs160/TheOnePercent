@@ -247,8 +247,9 @@ Academy.register("liquidity", {
           fig: {
             type: "shot",
             src: "we-sweep-usdcad",
+            before: {"src": "we-sweep-usdcad-before", "steps": ["3 June: a low at 1.35980.", "5 July: another low at exactly 1.35980. Equal lows, with sell stops below them.", "11 July: the sweep to 1.35840, and a close back above the lows.", "15 July: the close of 1.36774 is above the sweep candle's high. The plan: buy at 1.3677, stop below the sweep at 1.3575 (102 pips), target 1.3881, 2R."], "trade": [["Order", "Buy 1.3677"], ["Stop", "1.3575 · 102 pips"], ["Target", "1.3881 · 2R"], ["Risk", "1% of the account"]], "note": "Make your own decision first, then switch to After to see what happened."},
             title: "Equal lows, sweep, reversal",
-            tag: "Worked example",
+            tag: "Before / After",
             steps: ["3 June: a low at 1.35980.", "5 July: another low at exactly 1.35980. Equal lows: sell stops from both swings sit just below.", "11 July: price dips to 1.35840, 14 pips below, triggers those stops, and closes back above at 1.36239. That is a sweep, not a breakdown.", "15 July: a close of 1.36774, above the sweep candle's high of 1.36480, confirms the shift.", "5 August: 1.39465, about 360 pips above the sweep low."],
             trade: [["Entry", "1.36770"], ["Stop", "1.35750 · 102 pips"], ["Target", "1.38810 · 2R"], ["Result", "Hit 1 Aug"]],
             caption: "A breakdown closes below the level and keeps going. A sweep pokes below it and closes back above. The close is what tells them apart.",

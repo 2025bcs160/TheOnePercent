@@ -32,6 +32,10 @@ pairs use UTC days).
 
 Worked examples use `{"t": "step", "n": 1, "at": ..., "p": ..., "dx": .., "dy": ..}`
 markers; the lesson figure's `steps` list explains each number in order.
+
+Add `"before": {"cut": <timestamp>, "ann": [...]}` to a spec to also render
+`<id>-before.webp`: the same window cut at the decision bar, with the plan drawn
+and later price hidden. The lesson shows both behind a Before / After toggle.
 To add a new image, add the CSV to `data/`, add a spec to `specs.py`, render,
 and check it visually before using it in a lesson with
 `{ type: "shot", src: "<id>", title, caption, meta, alt }`.

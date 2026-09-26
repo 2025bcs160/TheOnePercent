@@ -28,7 +28,8 @@
               history by tools/chart-shots (The1% branded, never a third-
               party screenshot) so the annotations sit on the exact candles.
               src is the file name in assets/academy/shots without .webp.
-              Worked examples add steps:["…"] (explains the numbered markers
+              Add before:{src, steps, trade, note} for a Before / After
+              toggle (the plan, then the outcome). Worked examples add steps:["…"] (explains the numbered markers
               on the chart, in order) and trade:[["Entry","…"],…].
 
    Overlays (candles)
@@ -382,11 +383,9 @@ window.Figures = (() => {
 
   const SHOTS = (window.ACADEMY_ROOT || "../") + "assets/academy/shots/";
 
-  function shot(spec) {
+  function shotParts(spec) {
     const src = SHOTS + spec.src + ".webp";
     return (
-      '<figure class="fig fig-shot">' +
-      (spec.title ? '<div class="fig-head"><b>' + esc(spec.title) + "</b><span>" + esc(spec.tag || "Real chart") + "</span></div>" : "") +
       '<button type="button" class="shot" data-shot="' + esc(src) + '" aria-label="Enlarge chart: ' + esc(spec.alt || spec.title || "") + '">' +
       '<img src="' + esc(src) + '" alt="' + esc(spec.alt || spec.title || "") + '" width="1440" height="810" loading="lazy" decoding="async">' +
       "</button>" +
@@ -399,8 +398,36 @@ window.Figures = (() => {
         ? '<dl class="shot-trade">' + spec.trade.map(function (r) {
             return "<div><dt>" + esc(r[0]) + "</dt><dd>" + esc(r[1]) + "</dd></div>";
           }).join("") + "</dl>"
-        : "") +
-      "<figcaption>" + (spec.caption ? esc(spec.caption) : "") +
+        : "")
+    );
+  }
+
+  let baSeq = 0;
+  function shot(spec) {
+    let body;
+    if (spec.before) {
+      /* before / after: a CSS-only toggle (radio + label), no script needed */
+      const id = "ba" + ++baSeq;
+      const bf = Object.assign({ alt: (spec.alt || "") + " (before the trade)" }, spec.before);
+      body =
+        '<div class="ba">' +
+        '<input type="radio" class="ba-r ba-r1" name="' + id + '" id="' + id + 'b" checked>' +
+        '<input type="radio" class="ba-r ba-r2" name="' + id + '" id="' + id + 'a">' +
+        '<div class="ba-tabs" role="presentation">' +
+        '<label for="' + id + 'b" class="ba-l1"><b>Before</b> the plan</label>' +
+        '<label for="' + id + 'a" class="ba-l2"><b>After</b> what happened</label>' +
+        "</div>" +
+        '<div class="ba-p ba-p1">' + shotParts(bf) + (bf.note ? '<p class="ba-note">' + esc(bf.note) + "</p>" : "") + "</div>" +
+        '<div class="ba-p ba-p2">' + shotParts(spec) + (spec.caption ? '<p class="ba-note">' + esc(spec.caption) + "</p>" : "") + "</div>" +
+        "</div>";
+    } else {
+      body = shotParts(spec);
+    }
+    return (
+      '<figure class="fig fig-shot' + (spec.before ? " fig-ba" : "") + '">' +
+      (spec.title ? '<div class="fig-head"><b>' + esc(spec.title) + "</b><span>" + esc(spec.tag || "Real chart") + "</span></div>" : "") +
+      body +
+      "<figcaption>" + (spec.caption && !spec.before ? esc(spec.caption) : "") +
       (spec.meta ? '<span class="shot-meta">' + esc(spec.meta) + " · real market data · The1% Charts</span>" : "") +
       "</figcaption>" +
       "</figure>"

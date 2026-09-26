@@ -1433,3 +1433,74 @@
     animation: none;
   }
 }
+
+/* before / after toggle on worked examples (CSS only) */
+.ba-r {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ba-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ba-tabs label {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.ba-tabs label b {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+
+.ba-r1:checked ~ .ba-tabs .ba-l1 {
+  color: #e2b23f;
+  border-color: rgba(226, 178, 63, 0.6);
+  background: rgba(226, 178, 63, 0.1);
+}
+
+.ba-r2:checked ~ .ba-tabs .ba-l2 {
+  color: #2fd18c;
+  border-color: rgba(47, 209, 140, 0.6);
+  background: rgba(47, 209, 140, 0.1);
+}
+
+.ba-r1:focus-visible ~ .ba-tabs .ba-l1,
+.ba-r2:focus-visible ~ .ba-tabs .ba-l2 {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.ba-p {
+  display: none;
+}
+
+.ba-r1:checked ~ .ba-p1,
+.ba-r2:checked ~ .ba-p2 {
+  display: block;
+}
+
+.ba-note {
+  margin: 0;
+  padding: 10px 14px 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink, inherit);
+  border-top: 1px solid var(--line);
+}

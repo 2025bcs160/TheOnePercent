@@ -145,8 +145,9 @@ Academy.register("fvg", {
           fig: {
             type: "shot",
             src: "we-fvg-eurjpy",
+            before: {"src": "we-fvg-eurjpy-before", "steps": ["11 July: a 330-pip down day from the 175.424 high. Sellers have taken control.", "16 to 18 July: a bearish FVG forms from 171.572 to 172.269, and price moves away from it.", "The plan on Friday 19 July: if price rallies back into the gap, sell at 171.60. The stop goes above the whole gap at 172.40 (80 pips). The target is 168.40, 4R."], "trade": [["Order", "Sell limit 171.60"], ["Stop", "172.40 · 80 pips"], ["Target", "168.40 · 4R"], ["Risk", "1% of the account"]], "note": "Make your own decision first, then switch to After to see what happened."},
             title: "Bearish FVG, retest and 4R",
-            tag: "Worked example",
+            tag: "Before / After",
             steps: ["11 July: EURJPY tops at 175.424 and closes 330 pips lower at 172.122. The first crack in the uptrend.", "16 to 18 July: candle 1 (16 Jul) has a low of 172.269, candle 2 (17 Jul) is a strong down day, candle 3 (18 Jul) has a high of 171.572. Candle 3's high is below candle 1's low, so there is a bearish FVG from 171.572 to 172.269, about 70 pips.", "22 July: price rallies to 171.657, just inside the bottom of the gap, and is rejected. It closes at 170.845.", "The trade: sell at 171.60 inside the gap, stop at 172.40 above the gap (80 pips), target 168.40 (320 pips, 4R). The target is hit on 24 July, when the low is 166.135.", "5 August: the move ends at 154.393, more than 1,700 pips below the gap."],
             trade: [["Entry", "171.60"], ["Stop", "172.40 · 80 pips"], ["Target", "168.40 · 4R"], ["Result", "Hit 24 Jul"]],
             caption: "The gap only needed a small touch. Price came 8.5 pips into it and never closed inside it.",

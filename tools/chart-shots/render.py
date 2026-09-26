@@ -109,8 +109,12 @@ def render(spec):
                 return i
         return n - 1
 
-    lo = min(b["l"] for b in bars)
-    hi = max(b["h"] for b in bars)
+    # "cut": a before-the-trade view. The x scale keeps the whole window, but only
+    # bars up to the cut are drawn; the rest of the chart is left blank.
+    ci = bi(spec["cut"]) if spec.get("cut") else n - 1
+    vis = bars[: ci + 1]
+    lo = min(b["l"] for b in vis)
+    hi = max(b["h"] for b in vis)
     for a in spec.get("ann", []):
         for k in ("lo", "hi", "p", "entry", "stop", "target"):  # steps are placed inside the range
             if k in a and isinstance(a[k], (int, float)):
@@ -172,6 +176,12 @@ def render(spec):
         s.append(f'<line x1="{x:.1f}" x2="{x:.1f}" y1="{TOP}" y2="{H - AXB}" stroke="{C["grid"]}" stroke-opacity="0.6"/>')
         s.append(f'<text x="{x:.1f}" y="{H - 10}" text-anchor="middle" class="mono" font-size="11.5" fill="{C["muted"]}">{lab}</text>')
 
+    if ci < n - 1:
+        fx = X(ci) + step / 2
+        s.append(f'<rect x="{fx:.1f}" y="{TOP}" width="{W - AXR - fx:.1f}" height="{H - AXB - TOP}" fill="{C["panel"]}" fill-opacity="0.55"/>')
+        s.append(f'<line x1="{fx:.1f}" x2="{fx:.1f}" y1="{TOP}" y2="{H - AXB}" stroke="{C["brand"]}" stroke-dasharray="4 5" stroke-opacity="0.7"/>')
+        s.append(f'<text x="{fx + 16:.1f}" y="{H - AXB - 18}" class="mono" font-size="12" fill="{C["muted"]}">{esc(spec.get("hidden", "Price after this point is hidden"))}</text>')
+
     anns = spec.get("ann", [])
 
     # zones and boxes go under the candles
@@ -224,7 +234,7 @@ def render(spec):
             s.append(label_box(xb + 6, Y(st) + 6, a.get("slabel", "Stop  -1R"), "down", size=12))
 
     # candles
-    for i, b in enumerate(bars):
+    for i, b in enumerate(vis):
         up = b["c"] >= b["o"]
         cl = C["up"] if up else C["down"]
         x = X(i)
@@ -294,8 +304,8 @@ def render(spec):
             s.append(label_box(x, y, a["text"], k, anchor=a.get("anchor", "middle"), size=a.get("size", 12.5)))
 
     # toolbar
-    last = bars[-1]
-    chg = last["c"] - bars[-2]["c"]
+    last = bars[ci]
+    chg = last["c"] - bars[ci - 1]["c"]
     s.append(f'<rect width="{W}" height="{TOP}" fill="{C["panel"]}"/>')
     s.append(f'<line x1="0" x2="{W}" y1="{TOP}" y2="{TOP}" stroke="{C["line"]}"/>')
     s.append(f'<rect x="14" y="10" width="26" height="26" rx="7" fill="#3654ff"/>')
@@ -312,6 +322,11 @@ def render(spec):
     for lab, v in parts:
         s.append(f'<text x="{ox}" y="28" class="mono" font-size="12" fill="{C["muted"]}">{lab}<tspan fill="{cl}"> {fmt_price(v, dec)}</tspan></text>')
         ox += 20 + 7.3 * len(fmt_price(v, dec)) + 12
+    if spec.get("phase"):
+        pk = C["warn"] if spec["phase"] == "BEFORE" else C["up"]
+        pw = 16 + 8.2 * len(spec["phase"])
+        s.append(f'<rect x="{W - AXR - pw - 14:.1f}" y="{TOP + 12}" width="{pw:.1f}" height="24" rx="6" fill="{pk}" fill-opacity="0.16" stroke="{pk}" stroke-opacity="0.6"/>')
+        s.append(f'<text x="{W - AXR - pw / 2 - 14:.1f}" y="{TOP + 28.5}" text-anchor="middle" class="mono" font-size="12" font-weight="600" fill="{pk}">{spec["phase"]}</text>')
     s.append(f'<text x="{W - 16}" y="28" text-anchor="end" class="mono" font-size="11.5" fill="{C["muted"]}">THE1% CHARTS  ·  {esc(spec.get("stamp", "Real market data"))}</text>')
 
     # corner badge, where platforms put their logo
@@ -344,7 +359,16 @@ def main(ids):
     from PIL import Image
 
     OUT.mkdir(parents=True, exist_ok=True)
-    todo = [s for s in SPECS if not ids or s["id"] in ids]
+    todo = []
+    for sp in SPECS:  # a spec with "before" renders two images: <id>-before and <id>
+        if ids and sp["id"] not in ids:
+            continue
+        if sp.get("before"):
+            bf = sp["before"]
+            todo.append({**sp, "id": sp["id"] + "-before", "cut": bf["cut"], "ann": bf["ann"], "phase": "BEFORE", "hidden": bf.get("hidden", "Price after this point is hidden")})
+            todo.append({**sp, "phase": "AFTER"})
+        else:
+            todo.append(sp)
     exe = (glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium_headless_shell-*/*/chrome-headless-shell")) or [None])[0]
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=exe) if exe else p.chromium.launch()
